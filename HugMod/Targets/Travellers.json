@@ -1,0 +1,107 @@
+{
+  "Riebeck": {
+    "name": "Riebeck",
+    "objectName": "Traveller_HEA_Riebeck",
+    "hugTrigger": 1,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 1.9,
+      "Item3": 0.075
+    },
+    "fullbodyReact": false,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": -2031583355,
+    "transitionClipName": "Riebeck_Talking",
+    "isTraveller": true,
+    "isOwl": false,
+    "isAtEye": true
+  },
+  "Chert": {
+    "name": "Chert",
+    "objectName": "Traveller_HEA_Chert",
+    "hugTrigger": 2,
+    "focusPoint": {
+      "Item1": -0.02,
+      "Item2": 0.65,
+      "Item3": -0.45
+    },
+    "fullbodyReact": false,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": true,
+    "transitionTime": 0.5,
+    "transitionHash": 97110279,
+    "transitionClipName": "Chert_Chatter_Chipper",
+    "isTraveller": true,
+    "isOwl": false,
+    "isAtEye": true
+  },
+  "Gabbro": {
+    "name": "Gabbro",
+    "objectName": "Traveller_HEA_Gabbro",
+    "hugTrigger": 4,
+    "focusPoint": {
+      "Item1": -0.06,
+      "Item2": 1.75,
+      "Item3": -0.4
+    },
+    "fullbodyReact": false,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": true,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.7,
+    "transitionHash": -597509743,
+    "transitionClipName": "Gabbro_Idle",
+    "isTraveller": true,
+    "isOwl": false,
+    "isAtEye": true
+  },
+  "Feldspar": {
+    "name": "Feldspar",
+    "objectName": "Traveller_HEA_Feldspar",
+    "hugTrigger": 1,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 0.7,
+      "Item3": -0.6
+    },
+    "fullbodyReact": false,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": true,
+    "transitionTime": 0.5,
+    "transitionHash": -2106172409,
+    "transitionClipName": "Feldspar_Talking",
+    "isTraveller": true,
+    "isOwl": false,
+    "isAtEye": true
+  },
+  "Esker": {
+    "name": "Esker",
+    "objectName": "Villager_HEA_Esker",
+    "hugTrigger": 4,
+    "focusPoint": {
+      "Item1": 0.04,
+      "Item2": -0.33,
+      "Item3": -0.02
+    },
+    "fullbodyReact": false,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": true,
+    "isOwl": false,
+    "isAtEye": true
+  }
+}

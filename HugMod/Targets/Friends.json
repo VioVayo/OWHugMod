@@ -1,0 +1,107 @@
+{
+  "Solanum": {
+    "name": "Solanum",
+    "objectName": "Character_NOM_Solanum",
+    "hugTrigger": 9,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 1.76,
+      "Item3": 0.25
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": true,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": true,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": false,
+    "isAtEye": false
+  },
+  "Prisoner": {
+    "name": "the Prisoner",
+    "objectName": "Prefab_IP_GhostBird_Prisoner",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Eye_Solanum": {
+    "name": "Solanum",
+    "objectName": "Solanum",
+    "hugTrigger": 9,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 1.76,
+      "Item3": 0.25
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": true,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": true,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": false,
+    "isAtEye": true
+  },
+  "Eye_Prisoner_1": {
+    "name": "the Prisoner",
+    "objectName": "Prisoner_Choice",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": true,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": false,
+    "isAtEye": true
+  },
+  "Eye_Prisoner_2": {
+    "name": "the Prisoner",
+    "objectName": "Prisoner_Campfire",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": true,
+    "keepHandAnimLeft": true,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": false,
+    "isAtEye": true
+  }
+}

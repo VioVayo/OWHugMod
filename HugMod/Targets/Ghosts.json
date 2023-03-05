@@ -1,0 +1,359 @@
+{
+  "Heike": {
+    "name": "Heike",
+    "objectName": "Prefab_IP_GhostBird_Micolash",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Charles": {
+    "name": "Charles",
+    "objectName": "Prefab_IP_GhostBird_Pazuzu",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "John": {
+    "name": "John",
+    "objectName": "Prefab_IP_GhostBird_Enkidu",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Josh": {
+    "name": "Josh",
+    "objectName": "Prefab_IP_GhostBird_EnkiTwo",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Chuck": {
+    "name": "Chuck",
+    "objectName": "Prefab_IP_GhostBird_Gehrman",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Greg": {
+    "name": "Greg",
+    "objectName": "Prefab_IP_GhostBird_Ebrietas",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Tom": {
+    "name": "Tom",
+    "objectName": "Prefab_IP_GhostBird_Amygdala",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Will": {
+    "name": "Will",
+    "objectName": "Prefab_IP_GhostBird_Gilgamesh",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Jean": {
+    "name": "Jean",
+    "objectName": "Prefab_IP_GhostBird_Bahomet",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Mike": {
+    "name": "Mike",
+    "objectName": "Prefab_IP_GhostBird_Hornet",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Richard": {
+    "name": "Richard",
+    "objectName": "Prefab_IP_GhostBird_FalseKnight",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Bob": {
+    "name": "Bob",
+    "objectName": "Prefab_IP_GhostBird_Zote",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Dan": {
+    "name": "Dan",
+    "objectName": "Prefab_IP_GhostBird_Nosk",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "George": {
+    "name": "George",
+    "objectName": "Prefab_IP_GhostBird_Yubaba",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Steve": {
+    "name": "Steve",
+    "objectName": "Prefab_IP_GhostBird_Bou",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Frank": {
+    "name": "Frank",
+    "objectName": "Prefab_IP_GhostBird_NoFace",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "Carl": {
+    "name": "Carl",
+    "objectName": "Prefab_IP_GhostBird_Kamaji",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  }
+}

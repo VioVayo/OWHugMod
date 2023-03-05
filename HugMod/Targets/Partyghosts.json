@@ -1,0 +1,254 @@
+{
+  "OwlProxy1": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_1/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "OwlProxy2": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_2/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "OwlProxy3": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_3/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "OwlProxy4": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_4/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "OwlProxy5": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_5/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "OwlProxy6": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_6/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "OwlProxy7": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_7/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "OwlProxy8": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_8/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "OwlProxy9": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_9/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "OwlProxy10": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_10/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "OwlProxy11": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_11/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  },
+  "OwlProxy12": {
+    "name": "Ghost",
+    "objectName": "GhostFinalDestination_12/Prefab_IP_GhostBird_Proxy",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 0,
+    "transitionClipName": "",
+    "isTraveller": false,
+    "isOwl": true,
+    "isAtEye": false
+  }
+}

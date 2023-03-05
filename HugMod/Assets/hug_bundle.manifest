@@ -1,0 +1,27 @@
+ManifestFileVersion: 0
+CRC: 3565347535
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 585b1c9d10bdce158e245bde57b3d3c8
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 81be94c203cbc62109b6f5f6fe206615
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 74
+  Script: {instanceID: 0}
+- Class: 90
+  Script: {instanceID: 0}
+- Class: 91
+  Script: {instanceID: 0}
+- Class: 95
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/HugModAssets/HugAnims.prefab
+Dependencies: []
