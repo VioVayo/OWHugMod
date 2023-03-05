@@ -12,7 +12,7 @@ on:
 
 env:
     PROJ_USERNAME: VioVayo
-    PROJ_NAME: ModThatDoesNothing
+    PROJ_NAME: HugMod
 
 jobs:
     pre_job:
