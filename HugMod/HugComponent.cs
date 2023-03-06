@@ -162,9 +162,9 @@ namespace HugMod
         // Set, gets, changes
         public void SetHugEnabled(bool enable)
         {
-            if (HugReceiver._focused && !enable) DisableHug();
+            if (!enable && HugReceiver != null && HugReceiver._focused) DisableHug();
             enabled = enable;
-            if (HugReceiver._focused && enable) EnableHug();
+            if (enable && HugReceiver != null && HugReceiver._focused) EnableHug();
         }
         public void SetLookAtPlayerEnabled(bool enable) 
         { 
