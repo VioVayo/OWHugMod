@@ -26,7 +26,8 @@ namespace HugMod
         void SetHugEnabled(GameObject hugObject, bool enable);
 
         /// <summary>
-        /// Toggles a humanoid target looking towards the player during a hug on and off, enabled by default
+        /// Toggles a humanoid target looking towards the player during a hug on and off, enabled by default<br/><br/>
+        /// Requires the HugComponent to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="enable">False to disable LookIK script, true to reenable</param>
@@ -40,7 +41,7 @@ namespace HugMod
         void SetPrompt(GameObject hugObject, string name);
 
         /// <summary>
-        /// Makes the player look towards the right place during a hug
+        /// Makes the player lean in towards the right place during a hug
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="focusPoint">The point to look at relative to the GameObject's Transform</param>
@@ -74,7 +75,8 @@ namespace HugMod
         void SetUnderlayTransition(GameObject hugObject, AnimationClip transitionClip, int transitionHash, float transitionTime = 0.5f);
 
         /// <summary>
-        /// (optional) Makes it so a transition happens during a hug sequence, causing it to always exit into a specific AnimatorState
+        /// (optional) Makes it so a transition happens during a hug sequence, causing it to always exit into a specific AnimatorState<br/><br/>
+        /// Requires the HugComponent to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="transitionClipName">The name of an AnimationClip associated with the new AnimatorState, the clip must be on the RuntimeAnimatorController</param>
@@ -84,21 +86,24 @@ namespace HugMod
 
 
         /// <summary>
-        /// Returns the InteractReceiver associated with the hug script
+        /// Returns the InteractReceiver associated with the hug script<br/><br/>
+        /// Requires HugComponent to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <returns>The currently set Interactreceiver</returns>
         InteractReceiver GetHugReceiver(GameObject hugObject);
 
         /// <summary>
-        /// Returns the primary Animator used by the hug script
+        /// Returns the primary Animator used by the hug script<br/><br/>
+        /// Requires HugComponent to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <returns>The currently set primary Animator</returns>
         Animator GetHugAnimator(GameObject hugObject);
 
         /// <summary>
-        /// Returns the secondary Animator used by the hug script
+        /// Returns the secondary Animator used by the hug script<br/><br/>
+        /// Requires HugComponent to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <returns>The currently set secondary Animator</returns>
@@ -143,7 +148,7 @@ namespace HugMod
 
 
         /// <summary>
-        /// Subscribes to an event that fires at the end of the component's Start method 
+        /// Subscribes to an event that fires at the end of the HugComponent's Start method 
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="action">The method to call</param>
@@ -178,7 +183,7 @@ namespace HugMod
         void OnHugFinish(GameObject hugObject, Action action);
 
         /// <summary>
-        /// Subscribes to an event that fires when the component is destroyed
+        /// Subscribes to an event that fires when the HugComponent is destroyed
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="action">The method to call</param>
@@ -186,7 +191,8 @@ namespace HugMod
 
 
         /// <summary>
-        /// Sets or changes the associated InteractReceiver
+        /// Sets or changes the associated InteractReceiver<br/><br/>
+        /// Requires HugComponent to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="newReceiver">The new InteractReceiver</param>
@@ -194,14 +200,16 @@ namespace HugMod
         void ChangeInteractReceiver(GameObject hugObject, InteractReceiver newReceiver, bool resetTriggerCollider = false);
 
         /// <summary>
-        /// Creates a new trigger Collider of the same type and position as a given Collider, but with slightly increased scale
+        /// Creates a new trigger Collider of the same type and position as a given Collider, but with slightly increased scale<br/><br/>
+        /// Requires HugComponent to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="newCompareCollider">The Collider to reference from</param>
         void ChangeTriggerCollider(GameObject hugObject, Collider newCompareCollider);
 
         /// <summary>
-        /// Sets or changes the associated primary Animator and related RuntimeAnimatorController
+        /// Sets or changes the associated primary Animator and related RuntimeAnimatorController<br/><br/>
+        /// Requires HugComponent to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="newAnimator">The new Animator</param>
@@ -209,14 +217,16 @@ namespace HugMod
         void ChangePrimaryAnimator(GameObject hugObject, Animator newAnimator, RuntimeAnimatorController newAnimatorController);
 
         /// <summary>
-        /// Sets or changes the associated secondary Animator
+        /// Sets or changes the associated secondary Animator<br/><br/>
+        /// Requires HugComponent to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="newAnimator">The new Animator</param>
         void ChangeSecondaryAnimator(GameObject hugObject, Animator newAnimator);
 
         /// <summary>
-        /// Sets or changes the associated CharacterAnimController
+        /// Sets or changes the associated CharacterAnimController<br/><br/>
+        /// Requires HugComponent to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="newAnimController">The new CharacterAnimController</param>

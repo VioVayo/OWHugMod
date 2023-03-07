@@ -34,7 +34,7 @@ namespace HugMod
         private Vector3 currentLookTarget;
         private float currentLookWeight;
         private int stateHash;
-        private bool isInitialised = false, isAnimated = false, canHug = false, sequenceInProgress = false;
+        private bool isAnimated = false, canHug = false, sequenceInProgress = false;
 
         private static Coroutine unstickRoutine;
         private static float unstickTime = 3;
@@ -97,7 +97,6 @@ namespace HugMod
             }
 
             hugOverrider.runtimeAnimatorController = AltRuntimeController;
-            isInitialised = true;
             OnInitComplete?.Invoke();
         }
 
@@ -167,9 +166,9 @@ namespace HugMod
             if (enable && HugReceiver != null && HugReceiver._focused) EnableHug();
         }
         public void SetLookAtPlayerEnabled(bool enable) 
-        { 
+        {
             if (hugIK != null) hugIK.enabled = enable; 
-            else HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugIK Component on on object \"{HugAnimator.gameObject.name}\".", MessageType.Error);
+            else HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugIK Component on object \"{HugAnimator.gameObject.name}\".", MessageType.Error);
         }
         public void ForceLookAtPlayer(bool enable) { forceLookAtPlayer = enable; }
         public void SetPrompt(string name) { hugPrompt = new(InputLibrary.interactSecondary, "<CMD> " + "Hug " + name); }
@@ -185,15 +184,14 @@ namespace HugMod
         }
         public void SetUnderlayTransition(string transitionClipName, int transitionHash, float transitionTime = 0.5f) 
         {
-            if (isInitialised) SetByName();
-            else OnInitComplete += SetByName;
-            void SetByName()
+            if (initialRuntimeController == null)
             {
-                if (!isAnimated) return;
-                this.transitionTime = transitionTime;
-                this.transitionHash = transitionHash;
-                this.transitionClip = Array.Find(initialRuntimeController.animationClips, element => element.name == transitionClipName); 
+                HugModInstance.ModHelper.Console.WriteLine($"Couldn't find RuntimeAnimatorController for object \"{HugAnimator.gameObject.name}\".", MessageType.Error);
+                return;
             }
+            this.transitionTime = transitionTime;
+            this.transitionHash = transitionHash;
+            this.transitionClip = Array.Find(initialRuntimeController.animationClips, element => element.name == transitionClipName);
         }
         public void SetUnderlayTransition(AnimationClip transitionClip, int transitionHash, float transitionTime = 0.5f)
         {
@@ -268,7 +266,8 @@ namespace HugMod
 
         public void OnAnimatorIK()
         {
-            var position = Locator.GetPlayerCamera().transform.position;
+            if (PlayerCamera == null) return;
+            var position = PlayerCamera.transform.position;
             var currentWeightTarget = (sequenceInProgress || forceLookAtPlayer) ? 1f : 0f;
             currentLookTarget = lookSpring.Update(currentLookTarget, position, Time.deltaTime);
             currentLookWeight = Mathf.Lerp(currentLookWeight, currentWeightTarget, Time.deltaTime * 2.5f);

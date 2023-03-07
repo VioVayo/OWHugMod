@@ -64,7 +64,8 @@ namespace HugMod.Targets
             hugComponent.SetFocusPoint(target.GetFocusPoint());
             hugComponent.SetAnimationTrigger(target.hugTrigger);
             hugComponent.SetAnimationMasks(target.fullbodyReact, target.keepFootAnimRight, target.keepFootAnimLeft, target.keepHandAnimRight, target.keepHandAnimLeft);
-            if (target.transitionHash != 0) hugComponent.SetUnderlayTransition(target.transitionClipName, target.transitionHash, target.transitionTime);
+            if (target.transitionHash != 0) 
+                hugComponent.OnInitComplete += () => { hugComponent.SetUnderlayTransition(target.transitionClipName, target.transitionHash, target.transitionTime); };
             Individualise(target, hugComponent);
             return hugComponent;
         }
@@ -95,7 +96,11 @@ namespace HugMod.Targets
                     var collider = hugComponent.gameObject.transform.Find("Collider (2)").gameObject.GetComponent<Collider>();
                     hugComponent.OnInitComplete += () => { hugComponent.ChangeTriggerCollider(collider); };
                 }
-                if (target == friends["Eye_Prisoner_1"]) hugComponent.gameObject.GetComponentInChildren<CharacterDialogueTree>().OnEndConversation += () => { HugReenable(target); };
+                if (target == friends["Eye_Prisoner_1"] || target == friends["Eye_Prisoner_1"]) 
+                {
+                    hugComponent.OnInitComplete += () => { hugComponent.SetLookAtPlayerEnabled(false); };
+                    if (target == friends["Eye_Prisoner_1"]) hugComponent.gameObject.GetComponentInChildren<CharacterDialogueTree>().OnEndConversation += () => { HugReenable(target); }; 
+                }
                 return;
             }
             if (target.isTraveller)
