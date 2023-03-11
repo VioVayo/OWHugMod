@@ -1,4 +1,4 @@
-# OWHugMod
+# Hug Mod
 ![HugMod Thumbnail](https://user-images.githubusercontent.com/127029039/224515568-b92f0b51-b962-4cd8-b1dd-c279bc8f4a78.png)
 
  Adds a hug mechanic to the game.  
