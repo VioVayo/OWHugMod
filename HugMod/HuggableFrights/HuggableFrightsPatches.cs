@@ -10,8 +10,12 @@ namespace HugMod.HuggableFrights
         [HarmonyPatch(typeof(GhostAction), nameof(GhostAction.CreateAction))]
         public static bool GhostAction_CreateAction_Prefix(GhostAction.Name name, ref GhostAction __result)
         {
-            if (name != HuggedActionName) return true;
-            __result = new HuggedAction();
+            if (name != HuggedActionName && name != WitnessedHugActionName && name != ReturnActionName) return true;
+
+            if (name == HuggedActionName) __result = new HuggedAction();
+            else if (name == WitnessedHugActionName) __result = new WitnessedHugAction();
+            else __result = new ReturnAction();
+
             return false;
         }
 

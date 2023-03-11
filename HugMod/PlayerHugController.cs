@@ -37,8 +37,7 @@ namespace HugMod
             PlayerCamera = Locator.GetPlayerCamera().gameObject;
             cameraParent = PlayerCamera.transform.parent.gameObject;
             cameraAttach = CreateChild("Hug_Camera", FindInDescendants(playerObject, "Traveller_Rig_v01:Traveller_Camera_01_Jnt"), scaleMultiplier: 10);
-            cameraAttach.transform.position = cameraParent.transform.position;
-            cameraAttach.transform.rotation = cameraParent.transform.rotation;
+            cameraAttach.transform.SetPositionAndRotation(cameraParent.transform.position, cameraParent.transform.rotation);
 
             playerAnimator = playerObject.GetComponent<Animator>();
             playerOverrider.runtimeAnimatorController = AltRuntimeController;
@@ -51,7 +50,7 @@ namespace HugMod
         }
 
 
-        public static Transform GetPlayerTransform() { return playerObject.transform; }
+        public static Transform GetPlayerObjectTransform() { return playerObject.transform; }
 
         public static void LockPlayerControl(Transform baseTransform, Vector3 focus)
         {

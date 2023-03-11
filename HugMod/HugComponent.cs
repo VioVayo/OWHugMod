@@ -344,7 +344,7 @@ namespace HugMod
         private void CommenceHug()
         {
             if (unstickRoutine != null) StopCoroutine(unstickRoutine);
-            var height = GetPlayerTransform().InverseTransformPoint(gameObject.transform.TransformPoint(focusPoint)).y;
+            var height = GetPlayerObjectTransform().InverseTransformPoint(gameObject.transform.TransformPoint(focusPoint)).y;
             if (height < 5 || height > 22)
             {
                 CancelHugSequence();

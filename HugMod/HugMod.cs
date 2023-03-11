@@ -69,6 +69,15 @@ namespace HugMod
             return list.ToArray();
         }
 
+        public static T[] AddToArray<T>(T[] array, T toAdd1, T toAdd2, T toAdd3)
+        {
+            var list = array.ToList();
+            list.Add(toAdd1);
+            list.Add(toAdd2);
+            list.Add(toAdd3);
+            return list.ToArray();
+        }
+
         public static Transform FindInDescendants(GameObject gameObject, string name, bool includeInactive = true)
         {
             return gameObject.GetComponentsInChildren<Transform>(includeInactive).Where(obj => obj.gameObject.name == name).First();

@@ -1,6 +1,8 @@
 ﻿using OWML.Common;
 using OWML.Utils;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using static HugMod.HugMod;
@@ -10,7 +12,11 @@ namespace HugMod.HuggableFrights
     public class HuggableFrightsMain
     {
         public static bool IsHuggableFrightsEnabled { get; private set; } = false;
+
+        public static List<GhostBrain> GhostBrains = new();
         public static GhostAction.Name HuggedActionName { get; private set; }
+        public static GhostAction.Name WitnessedHugActionName { get; private set; }
+        public static GhostAction.Name ReturnActionName { get; private set; }
 
         private static bool setupComplete = false;
         private static event Action<bool> OnHuggableFrightsToggle;
@@ -30,10 +36,15 @@ namespace HugMod.HuggableFrights
 
             IsHuggableFrightsEnabled = HugModInstance.ModHelper.Storage.Load<bool>("settings.json");
             HuggedActionName = EnumUtils.Create<GhostAction.Name>("Hugged");
+            WitnessedHugActionName = EnumUtils.Create<GhostAction.Name>("WitnessedHug");
+            ReturnActionName = EnumUtils.Create<GhostAction.Name>("Return");
 
             AddHuggableFrightsOption();
             LoadManager.OnCompleteSceneLoad += (scene, loadScene) => 
-            { if (loadScene == OWScene.SolarSystem || loadScene == OWScene.TitleScreen || loadScene == OWScene.EyeOfTheUniverse) AddHuggableFrightsOption(); };
+            { 
+                if (loadScene == OWScene.SolarSystem || loadScene == OWScene.TitleScreen || loadScene == OWScene.EyeOfTheUniverse) AddHuggableFrightsOption();
+                if (loadScene == OWScene.SolarSystem) GhostBrains = GameObject.FindObjectsOfType<GhostBrain>().ToList();
+            };
 
             setupComplete = true;
         }
@@ -42,8 +53,10 @@ namespace HugMod.HuggableFrights
         {
             if (!setupComplete) return;
 
+            hugComponent.gameObject.AddComponent<GhostNavigation>();
+
             var brain = hugComponent.gameObject.GetComponent<GhostBrain>();
-            brain._actions = AddToArray(brain._actions, HuggedActionName);
+            brain._actions = AddToArray(brain._actions, HuggedActionName, WitnessedHugActionName, ReturnActionName);
 
             brain._effects.OnGrabComplete += () => { hugComponent.SetHugEnabled(false); };
             hugComponent.OnInitComplete += () => { hugComponent.HugReceiver._interactRange = hugReceiverRange; };

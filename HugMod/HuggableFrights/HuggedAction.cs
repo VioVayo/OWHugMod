@@ -8,6 +8,7 @@ namespace HugMod.HuggableFrights
     public class HuggedAction : GhostAction
     {
         private HugComponent hugComponent;
+        private GhostNavigation ghostNavigation;
 
         //working variables
         private Vector3 hugLocation;
@@ -19,9 +20,9 @@ namespace HugMod.HuggableFrights
         //numbery things
         private float hugStunTime = 30;
         private float focusDelay = 0.4f;
-        private float followDistance = 5;
-        private float followLimit = 5;
-        private float maxPositionOffset = 3;
+        private float followDistance = 7;
+        private float followLimit = 15;
+        private float maxPositionOffset = 3.5f;
 
         private int chanceToStopWhileMoving = 1;
         private int chanceToNotMoveWhileStopped = 98;
@@ -31,6 +32,7 @@ namespace HugMod.HuggableFrights
         {
             base.Initialize(data, controller, sensors, effects);
             hugComponent = _controller.gameObject.GetComponent<HugComponent>();
+            ghostNavigation = _controller.gameObject.GetComponent<GhostNavigation>();
         }
 
         public override Name GetName() { return HuggedActionName; }
@@ -41,9 +43,14 @@ namespace HugMod.HuggableFrights
 
         public override void OnEnterAction()
         {
+            CheckForWitnesses();
             if (_data.previousAction != GetName())
             {
-                hugLocation = _transform.localPosition;
+                if (hugLocation == null || !ghostNavigation.CheckForFull()) 
+                { 
+                    hugLocation = _transform.localPosition;
+                    ghostNavigation.AddLocalWaypoint(hugLocation);
+                }
                 currentTarget = hugLocation;
                 focussingLight = false;
                 shouldFocus = false;
@@ -58,29 +65,24 @@ namespace HugMod.HuggableFrights
         public override bool Update_Action()
         {
             if (hugComponent.IsSequenceInProgress()) return true;
-            if (GetActionTimeElapsed() > hugStunTime) 
-            {
-                hugComponent.ForceLookAtPlayer(false);
-                return false; 
-            }
+            if (GetActionTimeElapsed() > hugStunTime) return false; 
 
-            var playerPosition = _transform.parent.InverseTransformPoint(GetPlayerTransform().position);
-            UpdateLantern(playerPosition);
-            UpdateFacing(playerPosition);
-            UpdateMovement(playerPosition);
+            var localPlayerPosition = _transform.parent.InverseTransformPoint(GetPlayerObjectTransform().position);
+            UpdateLantern(localPlayerPosition);
+            UpdateFacing(localPlayerPosition);
+            UpdateMovement(localPlayerPosition);
 
             return true; 
         }
 
+        public override void OnExitAction() { hugComponent.ForceLookAtPlayer(false); }
 
-        private void UpdateLantern(Vector3 playerPosition)
+
+        private void UpdateLantern(Vector3 localPlayerPosition)
         {
-            var isClose = (playerPosition - _transform.localPosition).magnitude < _controller.GetUnfocusedLanternRange();
             var playerConcealed = Locator.GetDreamWorldController().GetPlayerLantern().GetLanternController().IsConcealed();
             var playerDroppedLantern = !Locator.GetDreamWorldController().GetPlayerLantern().GetLanternController().IsHeldByPlayer();
-            var toggleCondition = false;
-            if (shouldFocus) toggleCondition = _data.sensor.isPlayerHeldLanternVisible;
-            else toggleCondition = (playerConcealed || playerDroppedLantern) && _data.wasPlayerLocationKnown;
+            var toggleCondition = shouldFocus ? _data.sensor.isPlayerHeldLanternVisible : (playerConcealed || playerDroppedLantern) && _data.wasPlayerLocationKnown;
 
             if (toggleCondition)
             { 
@@ -94,18 +96,25 @@ namespace HugMod.HuggableFrights
             }
             if (focussingLight)
             {
+                var isClose = Vector3.Distance(localPlayerPosition, _transform.localPosition) < _controller.GetUnfocusedLanternRange();
                 var refocusCondition = isClose ? _controller.GetDreamLanternController().GetFocus() != 0 : _controller.GetDreamLanternController().GetFocus() != 1;
                 if (refocusCondition) _controller.ChangeLanternFocus(isClose ? 0 : 1);
             }
         }
 
-        private void UpdateFacing(Vector3 playerPosition)
+        private void UpdateFacing(Vector3 localPlayerPosition)
         {
-            var relativePlayerPosition = _transform.InverseTransformPoint(GetPlayerTransform().position);
+            if (focussingLight || shouldFocus)
+            {
+                _controller.FaceLocalPosition(localPlayerPosition, TurnSpeed.FAST);
+                return;
+            }
+
+            var relativePlayerPosition = _transform.InverseTransformPoint(GetPlayerObjectTransform().position);
             if (_controller._facingState != GhostController.FacingState.FacePosition)
             {
                 var hasBackToPlayer = !_controller.IsMoving() && relativePlayerPosition.z < 0;
-                if (hasBackToPlayer || focussingLight || shouldFocus) _controller.FaceLocalPosition(playerPosition, shouldFocus ? TurnSpeed.FAST : TurnSpeed.MEDIUM);
+                if (hasBackToPlayer) _controller.FaceLocalPosition(localPlayerPosition, TurnSpeed.MEDIUM);
             }
             else if (_controller._facingState != GhostController.FacingState.FaceVelocity)
             {
@@ -114,42 +123,36 @@ namespace HugMod.HuggableFrights
             }
         }
 
-        private void UpdateMovement(Vector3 playerPosition)
+        private void UpdateMovement(Vector3 localPlayerPosition)
         {
-            //keep the feetsies on the floor where they belong
-            if (Physics.Raycast(_transform.position + _transform.up.normalized, -_transform.up, out RaycastHit hit, 1.25f, OWLayerMask.physicalMask)) _transform.position = hit.point;
-
-            //check several conditions to see if movement should take place at all
-            var playerDistance = (playerPosition - _transform.localPosition).magnitude;
-            var movedDistance = (_transform.localPosition - hugLocation).magnitude;
-            var playerMovedDistance = (playerPosition - hugLocation).magnitude;
-
-            var floorCheckOrigin = _transform.position + _controller._velocity * 0.25f + _transform.up.normalized;
-            var floorCheck = Physics.Raycast(floorCheckOrigin, -_transform.up, out RaycastHit floorHit, 1.5f, OWLayerMask.physicalMask);
+            var playerDistance = Vector3.Distance(localPlayerPosition, _transform.localPosition);
+            var movedDistance = Vector3.Distance(_transform.localPosition, hugLocation);
+            var playerMovedDistance = Vector3.Distance(localPlayerPosition, hugLocation);
 
             var random = Random.Range(0, 100);
             var stopChance = _controller.IsMoving() ? random < chanceToStopWhileMoving : random < chanceToNotMoveWhileStopped;
 
-            if (playerDistance < followDistance || (movedDistance > followLimit && playerMovedDistance > followLimit) || !floorCheck || stopChance || focussingLight || shouldFocus)
+            if (playerDistance < followDistance || (movedDistance > followLimit && playerMovedDistance > followLimit) || stopChance || focussingLight || shouldFocus)
             {
                 _controller.StopMoving();
                 return;
             }
 
-            //continuously projects target onto plane going through _transform.position
-            if (!_controller.IsMoving()) currentTarget = GetPlayerTransform().position + Random.onUnitSphere * maxPositionOffset;
-            var projection = Vector3.ProjectOnPlane(currentTarget - _transform.position, _transform.up) + _transform.position;
+            if (!_controller.IsMoving()) currentTarget = localPlayerPosition + Random.onUnitSphere * maxPositionOffset;
+            ghostNavigation.UpdateNavigationToTarget(currentTarget, MoveType.INVESTIGATE);
+        }
 
-            //account for elevation differences, I drew triangles to math this and everything
-            if (floorCheck && _controller.IsMoving())
+        private void CheckForWitnesses()
+        {
+            foreach (var brain in GhostBrains)
             {
-                var dist = (projection - _transform.position).magnitude;
-                var checkHeight = _transform.InverseTransformPoint(floorHit.point).y;
-                var checkDist = Vector3.ProjectOnPlane(_controller._velocity * 0.25f - _transform.position, _transform.up).magnitude;
-                if (checkDist != 0) projection += (dist * checkHeight / checkDist) * _transform.up.normalized;
-            }
+                if (Vector3.Distance(brain.gameObject.transform.position, _transform.position) > 50) continue;
+                if (brain.GetCurrentActionName() == HuggedActionName) continue;
 
-            _controller.MoveToLocalPosition(_transform.parent.InverseTransformPoint(projection), MoveType.INVESTIGATE);
+                var lookPosition = _sensors._sightOrigin.position;
+                if (brain._sensors.CheckPointInVisionCone(lookPosition) && !brain._sensors.CheckLineOccluded(brain._sensors._sightOrigin.position, lookPosition))
+                    brain.ChangeAction(WitnessedHugActionName);
+            }
         }
     }
 }
