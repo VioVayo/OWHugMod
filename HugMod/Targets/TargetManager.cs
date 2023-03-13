@@ -265,7 +265,27 @@ namespace HugMod.Targets
                 hugComponent.OnHugStart += () => { controller.SetMovementPaused(true); };
                 hugComponent.OnHugFinish += () => { controller.SetMovementPaused(false); };
 
-                if (target == friends["Prisoner"]) TargetPatches.PrisonerHug = hugComponent;
+                if (target == friends["Prisoner"]) 
+                { 
+                    TargetPatches.PrisonerHug = hugComponent;
+                    var receiverTransform = hugComponent.transform.Find("InteractReceiver");
+                    var receiverCollider = receiverTransform.gameObject.GetComponent<CapsuleCollider>();
+                    var lookTarget = receiverTransform.Find("ConversationLookTarget");
+                    var prisonerColliderTransform = FindInDescendants(hugComponent.gameObject, "Collider_Prisoner", false);
+                    var prisonerCollider = prisonerColliderTransform.gameObject.GetComponent<CapsuleCollider>();
+
+                    lookTarget.SetParent(receiverTransform.parent, true);
+
+                    receiverCollider.center = prisonerCollider.center;
+                    receiverCollider.radius = prisonerCollider.radius;
+                    receiverCollider.height = prisonerCollider.height;
+                    receiverCollider.direction = prisonerCollider.direction;
+
+                    receiverTransform.SetParent(prisonerColliderTransform.parent);
+                    receiverTransform.localPosition = prisonerColliderTransform.localPosition;
+                    receiverTransform.localRotation = prisonerColliderTransform.localRotation;
+                    receiverTransform.localScale = prisonerColliderTransform.localScale;
+                }
                 else
                 {
                     hugComponent.SetPrompt("Ghost");
