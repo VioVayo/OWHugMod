@@ -1,16 +1,17 @@
 ﻿using HarmonyLib;
 using UnityEngine;
+using static HugMod.HugMod;
+using static HugMod.Targets.TargetManager;
 
 namespace HugMod.Targets
 {
     [HarmonyPatch]
-    public class TargetPatches
+    public class GabbroPatches
     {
-        public static HugComponent GabbroHug, SolanumHug, PrisonerHug;
+        public static void Apply() { new PatchClassProcessor(HarmonyInstance, typeof(GabbroPatches)).Patch(); }
 
 
-        //-----Gabbro patches-----
-        [HarmonyPrefix] //keeps hammock from receiving triggers it shouldn't
+        [HarmonyPrefix] //keep hammock from receiving triggers it shouldn't
         [HarmonyPatch(typeof(GabbroTravelerController), nameof(GabbroTravelerController.StartConversation))]
         public static bool GabbroTravelerController_StartConversation_Prefix()
         {
@@ -25,9 +26,15 @@ namespace HugMod.Targets
         {
             GabbroHug?.CancelHugSequence();
         }
+    }
 
 
-        //-----Solanum conversation patches-----
+    [HarmonyPatch]
+    public class SolanumPatches
+    {
+        public static void Apply() { new PatchClassProcessor(HarmonyInstance, typeof(SolanumPatches)).Patch(); }
+
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(SolanumAnimController), nameof(SolanumAnimController.PlayRaiseCairns))]
         public static bool SolanumAnimController_PlayRaiseCairns_Prefix()
@@ -58,7 +65,7 @@ namespace HugMod.Targets
             SolanumHug?.SetHugEnabled(true);
         }
 
-        [HarmonyPrefix] //makes IK work without required parameters
+        [HarmonyPrefix] //make IK work without required parameters
         [HarmonyPatch(typeof(SolanumAnimController), nameof(SolanumAnimController.OnAnimatorIK))]
         public static bool SolanumAnimController_OnAnimatorIK_Prefix(SolanumAnimController __instance)
         {
@@ -74,7 +81,7 @@ namespace HugMod.Targets
             return false;
         }
 
-        [HarmonyPrefix] //removes attempts to get AnimatorStateEvents during hug sequence
+        [HarmonyPrefix] //remove attempts to get AnimatorStateEvents during hug sequence
         [HarmonyPatch(typeof(SolanumAnimController), nameof(SolanumAnimController.LateUpdate))]
         public static bool SolanumAnimController_LateUpdate_Prefix(SolanumAnimController __instance)
         {
@@ -92,26 +99,26 @@ namespace HugMod.Targets
         {
             return (SolanumHug == null || !SolanumHug.IsSequenceInProgress());
         }
+    }
 
 
-        //-----Prisoner sequence patches-----
+    [HarmonyPatch]
+    public class PrisonerPatches
+    {
+        public static void Apply() { new PatchClassProcessor(HarmonyInstance, typeof(PrisonerPatches)).Patch(); }
+
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(PrisonerBrain), nameof(PrisonerBrain.OnArriveAtPosition))]
         public static bool PrisonerBrain_OnArriveAtPosition_Prefix(PrisonerBrain __instance)
         {
-            if (PrisonerHug == null) return true;
-            if (__instance._currentBehavior == PrisonerBehavior.MoveToElevatorDoor) 
-            { 
-                PrisonerHug.SetHugEnabled(false);
-                if (PrisonerHug.IsSequenceInProgress()) 
-                { 
-                    PrisonerHug.OnHugFinish += DelayedArrival;
-                    return false;
-                }
-            }
-            return true;
+            if (PrisonerHug == null || __instance._currentBehavior != PrisonerBehavior.MoveToElevatorDoor) return true;
 
-            void DelayedArrival()
+            PrisonerHug.SetHugEnabled(false);
+            if (PrisonerHug.IsSequenceInProgress()) PrisonerHug.OnHugFinish += DelayedArrival;
+            return !PrisonerHug.IsSequenceInProgress();
+
+            void DelayedArrival() //does the things that would normally happen the moment the Prisoner reached the elevator
             {
                 PrisonerHug.OnHugFinish -= DelayedArrival;
                 __instance._controller.StopFacing();
@@ -144,9 +151,15 @@ namespace HugMod.Targets
             __instance._data.FixedUpdate_Data(__instance._controller, __instance._sensors);
             return false;
         }
+    }
 
 
-        //-----Owl patches-----
+    [HarmonyPatch]
+    public class GhostPatches
+    {
+        public static void Apply() { new PatchClassProcessor(HarmonyInstance, typeof(GhostPatches)).Patch(); }
+
+
         [HarmonyPrefix] //prevent owls from rotating when they shouldn't
         [HarmonyPatch(typeof(GhostController), nameof(GhostController.TurnTowardsLocalDirection))]
         public static bool GhostController_TurnTowardsLocalDirection_Prefix(GhostController __instance)

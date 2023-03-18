@@ -6,15 +6,25 @@ namespace HugMod
 {
     public class HugModApi : IHugModApi
     {
-        public void AddHugComponent(GameObject hugObject) 
+        public void AddHugComponent(GameObject hugObject, bool initialiseImmediately) 
         {
-            if (hugObject.GetComponent<HugComponent>() == null) hugObject.AddComponent<HugComponent>();
+            if (hugObject.GetComponent<HugComponent>() == null) 
+            { 
+                var hug = hugObject.AddComponent<HugComponent>();
+                if (initialiseImmediately) hug.Initialise();
+            }
             else HugMod.HugModInstance.ModHelper.Console.WriteLine($"\"{hugObject.name}\" already has HugComponent.", MessageType.Error);
+        }
+
+        public void InitialiseHugComponent(GameObject hugObject)
+        {
+            if (hugObject.TryGetComponent(out HugComponent hug)) hug.Initialise();
+            else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
         }
 
         public void RemoveHugComponent(GameObject hugObject)
         {
-            if (hugObject.TryGetComponent(out HugComponent hug)) hug.Remove();
+            if (hugObject.TryGetComponent(out HugComponent hug)) GameObject.Destroy(hug);
             else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
         }
 
@@ -29,6 +39,12 @@ namespace HugMod
         public void SetLookAtPlayerEnabled(GameObject hugObject, bool enable)
         {
             if (hugObject.TryGetComponent(out HugComponent hug)) hug.SetLookAtPlayerEnabled(enable);
+            else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
+        }
+
+        public void ForceLookAtPlayer(GameObject hugObject, bool enable)
+        {
+            if (hugObject.TryGetComponent(out HugComponent hug)) hug.ForceLookAtPlayer(enable);
             else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
         }
 
@@ -142,20 +158,8 @@ namespace HugMod
             }
         }
 
-        public void ForceLookAtPlayer(GameObject hugObject, bool enable)
-        {
-            if (hugObject.TryGetComponent(out HugComponent hug)) hug.ForceLookAtPlayer(enable);
-            else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
-        }
-
 
         //-----Event subs-----
-        public void OnInitComplete(GameObject hugObject, Action action)
-        {
-            if (hugObject.TryGetComponent(out HugComponent hug)) hug.OnInitComplete += action;
-            else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
-        }
-
         public void OnHugStart(GameObject hugObject, Action action)
         {
             if (hugObject.TryGetComponent(out HugComponent hug)) hug.OnHugStart += action;

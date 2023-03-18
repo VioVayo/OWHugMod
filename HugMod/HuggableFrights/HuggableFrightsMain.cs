@@ -6,6 +6,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using static HugMod.HugMod;
+using static HugMod.HugModUtilities;
 
 namespace HugMod.HuggableFrights
 {
@@ -13,7 +14,8 @@ namespace HugMod.HuggableFrights
     {
         public static bool IsHuggableFrightsEnabled { get; private set; } = false;
 
-        public static List<GhostBrain> GhostBrains = new();
+        public static List<GhostBrain> OwlBrains { get; private set; } = new();
+
         public static GhostAction.Name HuggedActionName { get; private set; }
         public static GhostAction.Name WitnessedHugActionName { get; private set; }
         public static GhostAction.Name ReturnActionName { get; private set; }
@@ -21,7 +23,7 @@ namespace HugMod.HuggableFrights
         private static bool setupComplete = false;
         private static event Action<bool> OnHuggableFrightsToggle;
 
-        private static float hugReceiverRange = 10;
+        private static float owlReceiverRange = 10;
 
         private static string optionText = "Friendmaker Mode";
         private static string optionTooltipText = "Enables the making of more friends.";
@@ -38,12 +40,13 @@ namespace HugMod.HuggableFrights
             HuggedActionName = EnumUtils.Create<GhostAction.Name>("Hugged");
             WitnessedHugActionName = EnumUtils.Create<GhostAction.Name>("WitnessedHug");
             ReturnActionName = EnumUtils.Create<GhostAction.Name>("Return");
+            HuggableFrightsPatches.Apply();
 
             AddHuggableFrightsOption();
             LoadManager.OnCompleteSceneLoad += (scene, loadScene) => 
             { 
                 if (loadScene == OWScene.SolarSystem || loadScene == OWScene.TitleScreen || loadScene == OWScene.EyeOfTheUniverse) AddHuggableFrightsOption();
-                if (loadScene == OWScene.SolarSystem) GhostBrains = GameObject.FindObjectsOfType<GhostBrain>().ToList();
+                if (loadScene == OWScene.SolarSystem) OwlBrains = GameObject.FindObjectsOfType<GhostBrain>().ToList();
             };
 
             setupComplete = true;
@@ -53,13 +56,12 @@ namespace HugMod.HuggableFrights
         {
             if (!setupComplete) return;
 
-            hugComponent.gameObject.AddComponent<GhostNavigation>();
-
             var brain = hugComponent.gameObject.GetComponent<GhostBrain>();
             brain._actions = AddToArray(brain._actions, HuggedActionName, WitnessedHugActionName, ReturnActionName);
-
             brain._effects.OnGrabComplete += () => { hugComponent.SetHugEnabled(false); };
-            hugComponent.OnInitComplete += () => { hugComponent.HugReceiver._interactRange = hugReceiverRange; };
+
+            hugComponent.gameObject.AddComponent<GhostNavigation>();
+            hugComponent.HugReceiver._interactRange = owlReceiverRange;
             hugComponent.OnHugStart += () => { brain.ChangeAction(HuggedActionName); };
             hugComponent.OnHugFinish += () => { if (brain._currentAction.GetName() == HuggedActionName) brain._currentAction._enterTime = Time.time; };
 
@@ -77,7 +79,7 @@ namespace HugMod.HuggableFrights
             var optionsCanvas = GameObject.Find("OptionsCanvas");
 
             //add checkbox to settings menu
-            var menuObj = FindInDescendants(optionsCanvas, "MenuGameplayBasic").gameObject;
+            var menuObj = optionsCanvas.FindInDescendants("MenuGameplayBasic").gameObject;
             var settingsOptionObj = menuObj.transform.Find("UIElement-ReducedFrights").gameObject;
             settingsOptionObj = GameObject.Instantiate(settingsOptionObj, settingsOptionObj.transform.parent);
             settingsOptionObj.name = "UIElement-HuggableFrights";

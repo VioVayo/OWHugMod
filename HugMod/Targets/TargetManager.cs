@@ -8,9 +8,23 @@ namespace HugMod.Targets
 {
     public class TargetManager
     {
-        private static Dictionary<string, Target> travellers, villagers, friends, owls, partyOwls;
-        private static GameObject owlCollider;
+        public static HugComponent GabbroHug, SolanumHug, PrisonerHug;
 
+        private static Dictionary<string, Target> travellers, villagers, friends, owls, partyOwls;
+
+        private static GameObject owlColliderObj;
+        private static GameObject proxyColliderObj; //every target runs through all of AddHugComponent as part of the foreach so proxyColliderObj is the same pre- and post-initialisation
+
+        private static OWScene currentScene;
+
+
+        public static void ApplyTargetPatches()
+        {
+            GabbroPatches.Apply();
+            SolanumPatches.Apply();
+            PrisonerPatches.Apply();
+            GhostPatches.Apply();
+        }
 
         public static void LoadHugTargetData()
         {
@@ -23,9 +37,11 @@ namespace HugMod.Targets
 
         public static void SetUpHugTargets(OWScene loadScene)
         {
+            currentScene = loadScene;
+
             foreach (var entry in travellers) AddHugComponent(entry.Value);
 
-            if (loadScene == OWScene.EyeOfTheUniverse)
+            if (currentScene == OWScene.EyeOfTheUniverse)
             {
                 if (PlayerData.GetPersistentCondition("MET_SOLANUM")) AddHugComponent(friends["Eye_Solanum"]);
                 if (!PlayerHasDLC || !PlayerData.GetPersistentCondition("MET_PRISONER")) return;
@@ -45,7 +61,7 @@ namespace HugMod.Targets
             var prisonerEvent = GameObject.Find("Prefab_IP_GhostBird_Prisoner/Ghostbird_IP_ANIM").GetComponent<PrisonerEffects>();
             if (prisonerEvent != null) prisonerEvent.OnReactToVisionAnimationComplete += () => { HugReenable(friends["Prisoner"]); };
 
-            owlCollider = GameObject.Find("Prefab_IP_GhostBird_Micolash/Collider_Ghost");
+            owlColliderObj = GameObject.Find("Prefab_IP_GhostBird_Micolash/Collider_Ghost");
             foreach (var entry in partyOwls) AddHugComponent(entry.Value);
             foreach (var entry in owls) AddHugComponent(entry.Value);
         }
@@ -60,12 +76,13 @@ namespace HugMod.Targets
                 return null;
             }
             var hugComponent = targetObj.AddComponent<HugComponent>();
+            PreInitIndividualise(target, hugComponent);
+            hugComponent.Initialise();
             hugComponent.SetPrompt(target.name);
             hugComponent.SetFocusPoint(target.GetFocusPoint());
             hugComponent.SetAnimationTrigger(target.hugTrigger);
             hugComponent.SetAnimationMasks(target.fullbodyReact, target.keepFootAnimRight, target.keepFootAnimLeft, target.keepHandAnimRight, target.keepHandAnimLeft);
-            if (target.transitionHash != 0) 
-                hugComponent.OnInitComplete += () => { hugComponent.SetUnderlayTransition(target.transitionClipName, target.transitionHash, target.transitionTime); };
+            if (target.transitionHash != 0) hugComponent.SetUnderlayTransition(target.transitionClipName, target.transitionHash, target.transitionTime);
             Individualise(target, hugComponent);
             return hugComponent;
         }
@@ -73,33 +90,65 @@ namespace HugMod.Targets
         private static void HugReenable(Target target) //prevent loss of huggability after dialogue with Solanum and the Prisoner
         {
             var hugComponent = target.GetHugComponent() ?? AddHugComponent(target);
+            if (hugComponent == null) return;
             var receiver = hugComponent.gameObject.GetComponentInChildren<InteractReceiver>();
             receiver.OnPressInteract -= hugComponent.gameObject.GetComponentInChildren<CharacterDialogueTree>().OnPressInteract;
             receiver.OnGainFocus += () => { Locator.GetPromptManager().RemoveScreenPrompt(receiver._screenPrompt); };
             receiver.EnableInteraction();
         }
 
+
+        private static void PreInitIndividualise(Target target, HugComponent hugComponent)
+        {
+            if (target.isOwl && partyOwls.ContainsValue(target))
+            {
+                if (owlColliderObj != null) proxyColliderObj = GameObject.Instantiate(owlColliderObj, hugComponent.gameObject.transform);
+            }
+            if (target == friends["Prisoner"])
+            {
+                var receiverTransform = hugComponent.transform.Find("InteractReceiver");
+                var receiverCollider = receiverTransform.gameObject.GetComponent<CapsuleCollider>();
+                var lookTarget = receiverTransform.Find("ConversationLookTarget");
+                var prisonerColliderTransform = hugComponent.gameObject.FindInDescendants("Collider_Prisoner", false);
+                var prisonerCollider = prisonerColliderTransform.gameObject.GetComponent<CapsuleCollider>();
+
+                lookTarget.SetParent(receiverTransform.parent, true);
+
+                receiverTransform.SetParent(prisonerColliderTransform.parent);
+                receiverTransform.localPosition = prisonerColliderTransform.localPosition;
+                receiverTransform.localRotation = prisonerColliderTransform.localRotation;
+                receiverTransform.localScale = prisonerColliderTransform.localScale;
+
+                receiverCollider.center = prisonerCollider.center;
+                receiverCollider.radius = prisonerCollider.radius;
+                receiverCollider.height = prisonerCollider.height;
+                receiverCollider.direction = prisonerCollider.direction;
+            }
+        }
+
+
         private static void Individualise(Target target, HugComponent hugComponent)
         {
             if (target == travellers["Riebeck"])
             {
-                var collider = hugComponent.gameObject.transform.Find("CapsuleCollider").gameObject.GetComponent<Collider>();
-                hugComponent.OnInitComplete += () => { hugComponent.ChangeTriggerCollider(collider); };
+                var collider = hugComponent.gameObject.transform.Find("CapsuleCollider")?.gameObject.GetComponent<Collider>();
+                hugComponent.ChangeTriggerCollider(collider);
             }
-            if (target.isAtEye && LoadManager.GetCurrentScene() == OWScene.EyeOfTheUniverse)
+            if (target.isAtEye && currentScene == OWScene.EyeOfTheUniverse)
             {
                 AnimationClip nullClip = null;
                 hugComponent.SetUnderlayTransition(nullClip, 0);
+
                 if (target == travellers["Gabbro"]) hugComponent.SetFocusPoint(new(0.06f, 0.75f, -1.1f));
                 if (target == friends["Eye_Solanum"])
                 {
-                    var collider = hugComponent.gameObject.transform.Find("Collider (2)").gameObject.GetComponent<Collider>();
-                    hugComponent.OnInitComplete += () => { hugComponent.ChangeTriggerCollider(collider); };
+                    var collider = hugComponent.gameObject.transform.Find("Collider (2)")?.gameObject.GetComponent<Collider>();
+                    hugComponent.ChangeTriggerCollider(collider); 
                 }
-                if (target == friends["Eye_Prisoner_1"] || target == friends["Eye_Prisoner_1"]) 
+                if (target == friends["Eye_Prisoner_1"]) 
                 {
-                    hugComponent.OnInitComplete += () => { hugComponent.SetLookAtPlayerEnabled(false); };
-                    if (target == friends["Eye_Prisoner_1"]) hugComponent.gameObject.GetComponentInChildren<CharacterDialogueTree>().OnEndConversation += () => { HugReenable(target); }; 
+                    var prisonerEvent = hugComponent.gameObject.GetComponentInChildren<CharacterDialogueTree>();
+                    if (prisonerEvent != null) prisonerEvent.OnEndConversation += () => { HugReenable(target); }; 
                 }
                 return;
             }
@@ -109,7 +158,7 @@ namespace HugMod.Targets
                 hugComponent.OnHugStart += controller.StartConversation;
                 hugComponent.OnHugFinish += () =>
                 {
-                    controller._animator?.SetTrigger("Playing");
+                    controller._animator?.SetTrigger("Playing"); //Esker's Animator isn't assigned to their TravelerController
                     Locator.GetTravelerAudioManager().PlayAllTravelerAudio(target == travellers["Riebeck"] || target == travellers["Chert"] ? 0 : controller._delayToRestartAudio);
                 };
             }
@@ -133,13 +182,12 @@ namespace HugMod.Targets
             }
             if (target == travellers["Gabbro"])
             {
-                TargetPatches.GabbroHug = hugComponent;
+                GabbroHug = hugComponent;
                 var controller = hugComponent.gameObject.GetComponentInChildren<GabbroTravelerController>();
-                hugComponent.OnInitComplete += () =>
-                {
-                    hugComponent.ChangePrimaryAnimator(controller._animator, controller._animator.runtimeAnimatorController);
-                    hugComponent.ChangeSecondaryAnimator(controller._hammockAnimator);
-                };
+
+                hugComponent.ChangePrimaryAnimator(controller._animator, controller._animator.runtimeAnimatorController);
+                hugComponent.ChangeSecondaryAnimator(controller._hammockAnimator);
+
                 hugComponent.OnHugStart += () => { controller._hammockAnimator.ResetTrigger("Playing"); };
                 hugComponent.OnUnderlayTransitionStart += () =>
                 {
@@ -156,10 +204,8 @@ namespace HugMod.Targets
             }
             if (target == villagers["Hal_1"])
             {
-                var effects = hugComponent.gameObject.transform.Find("Effects_HEA_HalCarving").gameObject;
-                var audio = hugComponent.gameObject.transform.Find("AudioSource_HalCarving").gameObject;
-                var dialogue = hugComponent.gameObject.GetComponentInChildren<CharacterDialogueTree>();
-                hugComponent.OnInitComplete += () => { hugComponent.SetHugEnabled(false); };
+                var effects = hugComponent.gameObject.transform.Find("Effects_HEA_HalCarving")?.gameObject;
+                var audio = hugComponent.gameObject.transform.Find("AudioSource_HalCarving")?.gameObject;
                 hugComponent.OnHugStart += () =>
                 {
                     effects.SetActive(false);
@@ -170,25 +216,28 @@ namespace HugMod.Targets
                     effects.SetActive(true);
                     audio.SetActive(true);
                 };
+
+                var dialogue = hugComponent.gameObject.GetComponentInChildren<CharacterDialogueTree>();
                 dialogue.OnEndConversation += Enable;
+                hugComponent.SetHugEnabled(false);
 
                 void Enable()
                 {
-                    hugComponent.SetHugEnabled(true);
                     dialogue.OnEndConversation -= Enable;
+                    hugComponent.SetHugEnabled(true);
                 }
             }
             if (target == villagers["Gneiss"])
             {
-                var audio = FindInDescendants(hugComponent.gameObject, "AudioSource_BanjoTuning").gameObject;
+                var audio = hugComponent.gameObject.FindInDescendants("AudioSource_BanjoTuning")?.gameObject;
                 hugComponent.OnHugStart += () => { audio.SetActive(false); };
                 hugComponent.OnHugFinish += () => { audio.SetActive(true); };
             }
             if (target == villagers["Spinel"])
             {
                 var rodObj = hugComponent.gameObject.transform.Find("Villager_HEA_Spinel_ANIM_Fishing/Villager_HEA_Spinel_ANIM_Fishing_ROD");
-                var rodParent = rodObj.parent;
-                var rodAttach = CreateChild("FishingRod_Attach", FindInDescendants(hugComponent.gameObject, "Spinel_Skin:Short_Rig_V01:LF_Arm_Wrist_Jnt"));
+                var rodParent = rodObj?.parent;
+                var rodAttach = hugComponent.gameObject.FindInDescendants("Spinel_Skin:Short_Rig_V01:LF_Arm_Wrist_Jnt")?.CreateChild("FishingRod_Attach");
                 hugComponent.OnHugStart += () =>
                 {
                     if (hugComponent.IsAnimatorControllerSwapped()) return;
@@ -210,9 +259,9 @@ namespace HugMod.Targets
             }
             if (target == villagers["Tektite"])
             {
-                var pickObj = FindInDescendants(hugComponent.gameObject, "Props_HEA_Pickaxe");
+                var pickObj = hugComponent.gameObject.FindInDescendants("Props_HEA_Pickaxe");
                 var pickParent = pickObj.parent;
-                var pickAttach = CreateChild("Pickaxe_Attach", hugComponent.gameObject.transform);
+                var pickAttach = hugComponent.gameObject.transform.CreateChild("Pickaxe_Attach");
                 hugComponent.OnHugStart += () =>
                 {
                     if (hugComponent.IsAnimatorControllerSwapped()) return;
@@ -230,13 +279,14 @@ namespace HugMod.Targets
             }
             if (target == friends["Solanum"])
             {
-                TargetPatches.SolanumHug = hugComponent;
+                SolanumHug = hugComponent;
+                hugComponent.SetLookAtPlayerEnabled(false);
+
                 var controller = hugComponent.gameObject.GetComponentInChildren<SolanumAnimController>();
                 var parameter1 = false;
                 var parameter2 = false;
                 var parameter3 = false;
                 var parameter4 = false;
-                hugComponent.OnInitComplete += () => { hugComponent.SetLookAtPlayerEnabled(false); };
                 hugComponent.OnHugStart += () =>
                 {
                     parameter1 = controller._animator.GetBool("WatchingPlayer");
@@ -256,8 +306,7 @@ namespace HugMod.Targets
             {
                 if (partyOwls.ContainsValue(target))
                 {
-                    var proxyCollider = GameObject.Instantiate(owlCollider, target.GetTargetObject().transform);
-                    hugComponent.OnInitComplete += () => { proxyCollider.transform.SetParent(proxyCollider.transform.parent.Find("Ghostbird_IP_ANIM"), true); };
+                    proxyColliderObj?.transform.SetParent(proxyColliderObj.transform.parent.Find("Ghostbird_IP_ANIM"), true);
                     return;
                 }
 
@@ -265,27 +314,7 @@ namespace HugMod.Targets
                 hugComponent.OnHugStart += () => { controller.SetMovementPaused(true); };
                 hugComponent.OnHugFinish += () => { controller.SetMovementPaused(false); };
 
-                if (target == friends["Prisoner"]) 
-                { 
-                    TargetPatches.PrisonerHug = hugComponent;
-                    var receiverTransform = hugComponent.transform.Find("InteractReceiver");
-                    var receiverCollider = receiverTransform.gameObject.GetComponent<CapsuleCollider>();
-                    var lookTarget = receiverTransform.Find("ConversationLookTarget");
-                    var prisonerColliderTransform = FindInDescendants(hugComponent.gameObject, "Collider_Prisoner", false);
-                    var prisonerCollider = prisonerColliderTransform.gameObject.GetComponent<CapsuleCollider>();
-
-                    lookTarget.SetParent(receiverTransform.parent, true);
-
-                    receiverCollider.center = prisonerCollider.center;
-                    receiverCollider.radius = prisonerCollider.radius;
-                    receiverCollider.height = prisonerCollider.height;
-                    receiverCollider.direction = prisonerCollider.direction;
-
-                    receiverTransform.SetParent(prisonerColliderTransform.parent);
-                    receiverTransform.localPosition = prisonerColliderTransform.localPosition;
-                    receiverTransform.localRotation = prisonerColliderTransform.localRotation;
-                    receiverTransform.localScale = prisonerColliderTransform.localScale;
-                }
+                if (target == friends["Prisoner"]) PrisonerHug = hugComponent;
                 else
                 {
                     hugComponent.SetPrompt("Ghost");

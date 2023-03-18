@@ -9,11 +9,12 @@ namespace HugMod
     {
         public static bool WalkingTowardsHugTarget = false;
         public static float WalkingTowardsHugSpeed = 0.7f;
-        public static GameObject PlayerCamera;
+        public static GameObject PlayerCamera { get; private set; }
 
         private static GameObject playerObject;
         private static GameObject[] arms;
         private static OWAudioSource sound;
+        private static PlayerAnimController playerAnimController;
         private static Animator playerAnimator;
         private static RuntimeAnimatorController playerRuntimeController;
         private static AnimatorOverrideController playerOverrider = new();
@@ -36,9 +37,10 @@ namespace HugMod
 
             PlayerCamera = Locator.GetPlayerCamera().gameObject;
             cameraParent = PlayerCamera.transform.parent.gameObject;
-            cameraAttach = CreateChild("Hug_Camera", FindInDescendants(playerObject, "Traveller_Rig_v01:Traveller_Camera_01_Jnt"), scaleMultiplier: 10);
+            cameraAttach = playerObject.FindInDescendants("Traveller_Rig_v01:Traveller_Camera_01_Jnt").CreateChild("Hug_Camera", scaleMultiplier: 10);
             cameraAttach.transform.SetPositionAndRotation(cameraParent.transform.position, cameraParent.transform.rotation);
 
+            playerAnimController = playerObject.GetComponent<PlayerAnimController>();
             playerAnimator = playerObject.GetComponent<Animator>();
             playerOverrider.runtimeAnimatorController = AltRuntimeController;
 
@@ -106,11 +108,13 @@ namespace HugMod
                 if ((visible && Locator.GetActiveCamera().gameObject == PlayerCamera) || (!visible && Locator.GetActiveCamera().gameObject != PlayerCamera))
                 {
                     foreach (var arm in arms) arm.layer = LayerMask.NameToLayer(visible ? "VisibleToProbe" : "Default");
+                    playerAnimController._rightArmHidden = !visible; //keep this wrong to trick PlayerAnimController into not undoing layer changes
                     visible = !visible;
                 } 
                 yield return null; 
             }
             if (!visible) foreach (var arm in arms) arm.layer = LayerMask.NameToLayer("Default");
+            playerAnimController._rightArmHidden = false; //correct value here
 
             PlayerCamera.transform.SetParent(cameraParent.transform, true);
         }

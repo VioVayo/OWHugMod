@@ -44,6 +44,7 @@ namespace HugMod.HuggableFrights
         public override void OnEnterAction()
         {
             CheckForWitnesses();
+
             if (_data.previousAction != GetName())
             {
                 if (hugLocation == null || !ghostNavigation.CheckForFull()) 
@@ -144,7 +145,7 @@ namespace HugMod.HuggableFrights
 
         private void CheckForWitnesses()
         {
-            foreach (var brain in GhostBrains)
+            foreach (var brain in OwlBrains)
             {
                 if (Vector3.Distance(brain.gameObject.transform.position, _transform.position) > 50) continue;
                 if (brain.GetCurrentActionName() == HuggedActionName) continue;

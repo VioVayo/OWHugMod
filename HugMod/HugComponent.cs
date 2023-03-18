@@ -45,7 +45,6 @@ namespace HugMod
         private bool forceLookAtPlayer = false;
 
         //events
-        public event Action OnInitComplete;
         public event Action OnHugStart;
         public event Action OnUnderlayTransitionStart;
         public event Action OnConcludingHug;
@@ -53,7 +52,7 @@ namespace HugMod
         public event Action OnDestroyEvent;
 
 
-        public void Start()
+        public void Initialise()
         {
             HugReceiver = gameObject.GetComponentInChildren<InteractReceiver>();
             if (HugReceiver == null)
@@ -82,8 +81,8 @@ namespace HugMod
                 SecondaryAnimator = characterAnimController._secondaryAnimator;
                 lookSpring = characterAnimController.lookSpring;
             }
-            else 
-            { 
+            else
+            {
                 HugAnimator = gameObject.GetComponentInChildren<Animator>(true);
                 lookSpring = new(50, 14, 1);
             }
@@ -93,17 +92,21 @@ namespace HugMod
             {
                 initialRuntimeController = HugAnimator.runtimeAnimatorController;
                 hugIK = HugAnimator.gameObject.AddComponent<HugIK>();
-                hugIK.hugComponent = this;
+                hugIK.SetHugComponent(this);
             }
 
             hugOverrider.runtimeAnimatorController = AltRuntimeController;
-            OnInitComplete?.Invoke();
         }
 
         private bool AddTriggerCollider(Collider compareCollider)
         {
-            var triggerObj = CreateChild("Hug_TriggerCollider", compareCollider.gameObject.transform);
+            if (compareCollider == null) return false;
+
+            var triggerObj = compareCollider.gameObject.transform.CreateChild("Hug_TriggerCollider");
             triggerObj.layer = LayerMask.NameToLayer("Ignore Raycast");
+
+            hugTriggerCollider = triggerObj.AddComponent<HugTriggerCollider>();
+            hugTriggerCollider.SetHugComponent(this);
 
             if (compareCollider is CapsuleCollider capsuleCollider) AddCapsuleTrigger(capsuleCollider, triggerObj);
             else if (compareCollider is SphereCollider sphereCollider) AddSphereTrigger(sphereCollider, triggerObj);
@@ -111,14 +114,12 @@ namespace HugMod
             else if (compareCollider is MeshCollider meshCollider) AddMeshTrigger(meshCollider, triggerObj);
             else
             {
-                Destroy(triggerObj);
+                hugTriggerCollider.Remove();
                 HugModInstance.ModHelper.Console.WriteLine($"Collider type associated with object \"{gameObject.name}\" is not supported. HugComponent will be disabled.", MessageType.Error);
                 enabled = false;
                 return false;
             }
 
-            hugTriggerCollider = triggerObj.AddComponent<HugTriggerCollider>();
-            hugTriggerCollider.hugComponent = this;
             return true;
         }
 
@@ -184,14 +185,13 @@ namespace HugMod
         }
         public void SetUnderlayTransition(string transitionClipName, int transitionHash, float transitionTime = 0.5f) 
         {
-            if (initialRuntimeController == null)
+            if (initialRuntimeController != null)
             {
-                HugModInstance.ModHelper.Console.WriteLine($"Couldn't find RuntimeAnimatorController for object \"{HugAnimator.gameObject.name}\".", MessageType.Error);
-                return;
+                this.transitionTime = transitionTime;
+                this.transitionHash = transitionHash;
+                this.transitionClip = Array.Find(initialRuntimeController.animationClips, element => element.name == transitionClipName);
             }
-            this.transitionTime = transitionTime;
-            this.transitionHash = transitionHash;
-            this.transitionClip = Array.Find(initialRuntimeController.animationClips, element => element.name == transitionClipName);
+            else HugModInstance.ModHelper.Console.WriteLine($"Couldn't find RuntimeAnimatorController for object \"{HugAnimator.gameObject.name}\".", MessageType.Error);
         }
         public void SetUnderlayTransition(AnimationClip transitionClip, int transitionHash, float transitionTime = 0.5f)
         {
@@ -226,7 +226,7 @@ namespace HugMod
         }
         public void ChangeTriggerCollider(Collider newCompareCollider)
         {
-            if (hugTriggerCollider != null) Destroy(hugTriggerCollider.gameObject);
+            if (hugTriggerCollider != null) hugTriggerCollider.Remove();
             AddTriggerCollider(newCompareCollider);
         }
         public void ChangePrimaryAnimator(Animator newAnimator, RuntimeAnimatorController newAnimatorController)
@@ -235,11 +235,11 @@ namespace HugMod
             initialRuntimeController = newAnimatorController;
             isAnimated = newAnimator != null && newAnimator.avatar.isHuman;
 
-            if ((hugIK == null && newAnimator == null) || (hugIK != null && newAnimator != null && hugIK.gameObject == newAnimator.gameObject)) return;
-            if (hugIK != null) Destroy(hugIK);
+            if ((hugIK == null && !isAnimated) || (hugIK != null && isAnimated && hugIK.gameObject == newAnimator.gameObject)) return;
+            if (hugIK != null) hugIK.Remove();
             if (newAnimator == null) return;
             hugIK = newAnimator.gameObject.AddComponent<HugIK>();
-            hugIK.hugComponent = this;
+            hugIK.SetHugComponent(this);
         }
         public void ChangeSecondaryAnimator(Animator newAnimator) { SecondaryAnimator = newAnimator; }
         public void ChangeCharacterAnimController(CharacterAnimController newAnimController)
@@ -266,7 +266,7 @@ namespace HugMod
 
         public void OnAnimatorIK()
         {
-            if (PlayerCamera == null) return;
+            if (!isAnimated || PlayerCamera == null) return;
             var position = PlayerCamera.transform.position;
             var currentWeightTarget = (sequenceInProgress || forceLookAtPlayer) ? 1f : 0f;
             currentLookTarget = lookSpring.Update(currentLookTarget, position, Time.deltaTime);
@@ -278,12 +278,12 @@ namespace HugMod
             }
         }
 
-        public void Update()
+        private void Update()
         {
             if (OWInput.GetInputMode() == InputMode.Character) hugPrompt.SetVisibility(true);
             else hugPrompt.SetVisibility(false);
 
-            if (OWInput.GetInputMode() == InputMode.Character && canHug && OWInput.IsNewlyPressed(InputLibrary.interactSecondary)) BeginHugSequence();
+            if (OWInput.IsNewlyPressed(InputLibrary.interactSecondary) && canHug && OWInput.GetInputMode() == InputMode.Character) BeginHugSequence();
         }
 
 
@@ -316,11 +316,11 @@ namespace HugMod
             if (collider.gameObject.CompareTag("Player") && WalkingTowardsHugTarget && sequenceInProgress) StartCoroutine(HugSequenceMain()); 
         }
 
-        public IEnumerator HugSequenceMain()
+        private IEnumerator HugSequenceMain()
         {
             CommenceHug();
             yield return null;
-            if (isAnimated && HugAnimator.enabled)
+            if (isAnimated && HugAnimator.enabled && hugTrigger != "react_None")
             {
                 var wasHugging = IsAnimatorControllerSwapped();
                 while (HugAnimator.GetCurrentAnimatorClipInfo(0).Length == 0) yield return null;
@@ -395,7 +395,7 @@ namespace HugMod
                 return;
             }
             HugAnimator.SetTrigger("end_hug");
-            unstickRoutine = StartCoroutine(ResetAnimator(hugTrigger == "react_None" ? transitionTime + 0.2f : unstickTime));
+            unstickRoutine = StartCoroutine(ResetAnimator(hugTrigger == "react_None" ? 1.2f : unstickTime));
             OnConcludingHug?.Invoke();
         }
 
@@ -405,9 +405,12 @@ namespace HugMod
             while (PlayerState._inConversation) yield return null;
 
             var time = HugAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime;
-            HugAnimator.runtimeAnimatorController = initialRuntimeController;
-            HugAnimator.Play(stateHash, 0, time);
-            if (HugAnimator.layerCount > 1 && HugAnimator.GetCurrentAnimatorStateInfo(1).shortNameHash == stateHash) HugAnimator.Play(stateHash, 1, time);
+            if (IsAnimatorControllerSwapped())
+            {
+                HugAnimator.runtimeAnimatorController = initialRuntimeController;
+                HugAnimator.Play(stateHash, 0, time);
+                if (HugAnimator.layerCount > 1 && HugAnimator.GetCurrentAnimatorStateInfo(1).shortNameHash == stateHash) HugAnimator.Play(stateHash, 1, time);
+            }
             SecondaryAnimator?.Play(SecondaryAnimator.GetCurrentAnimatorStateInfo(0).shortNameHash, 0, time);
             OnHugFinish?.Invoke();
             sequenceInProgress = false;
@@ -453,13 +456,6 @@ namespace HugMod
         }
 
 
-        public void Remove()
-        {
-            if (hugTriggerCollider != null) Destroy(hugTriggerCollider.gameObject);
-            if (hugIK != null) Destroy(hugIK);
-            Destroy(this);
-        }
-
-        public void OnDestroy() { OnDestroyEvent?.Invoke(); }
+        private void OnDestroy() { OnDestroyEvent?.Invoke(); }
     }
 }

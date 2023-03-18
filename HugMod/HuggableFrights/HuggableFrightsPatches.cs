@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using static HugMod.HugMod;
 using static HugMod.HuggableFrights.HuggableFrightsMain;
 
 namespace HugMod.HuggableFrights
@@ -6,6 +7,9 @@ namespace HugMod.HuggableFrights
     [HarmonyPatch]
     public class HuggableFrightsPatches
     {
+        public static void Apply() { new PatchClassProcessor(HarmonyInstance, typeof(HuggableFrightsPatches)).Patch(); }
+
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(GhostAction), nameof(GhostAction.CreateAction))]
         public static bool GhostAction_CreateAction_Prefix(GhostAction.Name name, ref GhostAction __result)
