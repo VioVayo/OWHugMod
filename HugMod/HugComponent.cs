@@ -22,7 +22,7 @@ namespace HugMod
 
         //tabled
         private ScreenPrompt hugPrompt = new(InputLibrary.interactSecondary, "<CMD> " + "Hug");
-        private Vector3 focusPoint = new(0, 0.1f, 0);
+        private Vector3 focusPoint = new(0, 0, 0);
         private string hugTrigger = "react_None";
         private bool fullbodyReact = true, keepFootAnimRight = false, keepFootAnimLeft = false, keepHandAnimRight = false, keepHandAnimLeft = false;
 
@@ -52,8 +52,13 @@ namespace HugMod
         public event Action OnDestroyEvent;
 
 
+        private void Awake() { SetHugEnabled(false); }
+
         public void Initialise()
         {
+            var flag = gameObject.activeInHierarchy;
+            gameObject.SetActive(true);
+
             HugReceiver = gameObject.GetComponentInChildren<InteractReceiver>();
             if (HugReceiver == null)
             {
@@ -61,7 +66,7 @@ namespace HugMod
                 if (receiverCollider == null)
                 {
                     HugModInstance.ModHelper.Console.WriteLine($"Couldn't find OWCollider in children of object \"{gameObject.name}\". HugComponent will be disabled.", MessageType.Error);
-                    enabled = false;
+                    SetHugEnabled(false);
                     return;
                 }
                 if (receiverCollider.gameObject.layer == LayerMask.NameToLayer("Ignore Raycast")) receiverCollider.gameObject.layer = LayerMask.NameToLayer("Default");
@@ -83,7 +88,7 @@ namespace HugMod
             }
             else
             {
-                HugAnimator = gameObject.GetComponentInChildren<Animator>(true);
+                HugAnimator = gameObject.GetComponentInChildren<Animator>();
                 lookSpring = new(50, 14, 1);
             }
 
@@ -96,13 +101,15 @@ namespace HugMod
             }
 
             hugOverrider.runtimeAnimatorController = AltRuntimeController;
+            SetHugEnabled(true);
+            gameObject.SetActive(flag);
         }
 
         private bool AddTriggerCollider(Collider compareCollider)
         {
             if (compareCollider == null) return false;
 
-            var triggerObj = compareCollider.gameObject.transform.CreateChild("Hug_TriggerCollider");
+            var triggerObj = compareCollider.gameObject.CreateChild("Hug_TriggerCollider");
             triggerObj.layer = LayerMask.NameToLayer("Ignore Raycast");
 
             hugTriggerCollider = triggerObj.AddComponent<HugTriggerCollider>();
@@ -115,11 +122,10 @@ namespace HugMod
             else
             {
                 hugTriggerCollider.Remove();
-                HugModInstance.ModHelper.Console.WriteLine($"Collider type associated with object \"{gameObject.name}\" is not supported. HugComponent will be disabled.", MessageType.Error);
-                enabled = false;
+                HugModInstance.ModHelper.Console.WriteLine($"Collider type is not supported. HugComponent associated with object \"{gameObject.name}\" will be disabled.", MessageType.Error);
+                SetHugEnabled(false);
                 return false;
             }
-
             return true;
         }
 
@@ -169,7 +175,7 @@ namespace HugMod
         public void SetLookAtPlayerEnabled(bool enable) 
         {
             if (hugIK != null) hugIK.enabled = enable; 
-            else HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugIK Component on object \"{HugAnimator.gameObject.name}\".", MessageType.Error);
+            else HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugIK Component associated with object \"{gameObject.name}\".", MessageType.Error);
         }
         public void ForceLookAtPlayer(bool enable) { forceLookAtPlayer = enable; }
         public void SetPrompt(string name) { hugPrompt = new(InputLibrary.interactSecondary, "<CMD> " + "Hug " + name); }
@@ -207,8 +213,8 @@ namespace HugMod
             transitionClip = this.transitionClip; 
         }
 
-        public bool IsSequenceInProgress() { return sequenceInProgress; }
-        public bool IsAnimatorControllerSwapped() { return HugAnimator.runtimeAnimatorController == hugOverrider; }
+        public bool IsSequenceInProgress() => sequenceInProgress;
+        public bool IsAnimatorControllerSwapped() => (HugAnimator != null) && (HugAnimator.runtimeAnimatorController == hugOverrider);
 
         public void ChangeInteractReceiver(InteractReceiver newReceiver, bool resetTriggerCollider = false)
         {
@@ -218,6 +224,7 @@ namespace HugMod
                 HugReceiver.OnLoseFocus -= DisableHug;
             }
             HugReceiver = newReceiver;
+            if (newReceiver == null) return;
             newReceiver.OnGainFocus += EnableHug;
             newReceiver.OnLoseFocus += DisableHug;
 
@@ -226,26 +233,26 @@ namespace HugMod
         }
         public void ChangeTriggerCollider(Collider newCompareCollider)
         {
-            if (hugTriggerCollider != null) hugTriggerCollider.Remove();
+            hugTriggerCollider.Exists()?.Remove();
             AddTriggerCollider(newCompareCollider);
         }
-        public void ChangePrimaryAnimator(Animator newAnimator, RuntimeAnimatorController newAnimatorController)
+        public void ChangePrimaryAnimator(Animator newAnimator, bool resetAnimatorController = true)
         {
             HugAnimator = newAnimator;
-            initialRuntimeController = newAnimatorController;
             isAnimated = newAnimator != null && newAnimator.avatar.isHuman;
+            if (resetAnimatorController && isAnimated) initialRuntimeController = newAnimator.runtimeAnimatorController;
 
             if ((hugIK == null && !isAnimated) || (hugIK != null && isAnimated && hugIK.gameObject == newAnimator.gameObject)) return;
-            if (hugIK != null) hugIK.Remove();
-            if (newAnimator == null) return;
-            hugIK = newAnimator.gameObject.AddComponent<HugIK>();
-            hugIK.SetHugComponent(this);
+            hugIK.Exists()?.Remove();
+            hugIK = newAnimator.Exists()?.gameObject.AddComponent<HugIK>();
+            hugIK.Exists()?.SetHugComponent(this);
         }
+        public void ChangeAnimatorController(RuntimeAnimatorController newAnimatorController) { initialRuntimeController = newAnimatorController; }
         public void ChangeSecondaryAnimator(Animator newAnimator) { SecondaryAnimator = newAnimator; }
-        public void ChangeCharacterAnimController(CharacterAnimController newAnimController)
+        public void ChangeCharacterAnimController(CharacterAnimController newCharacterAnimController)
         {
-            characterAnimController = newAnimController;
-            lookSpring = newAnimController.lookSpring;
+            characterAnimController = newCharacterAnimController;
+            lookSpring = newCharacterAnimController.Exists()?.lookSpring ?? new(50, 14, 1);
         }
 
 
@@ -253,7 +260,7 @@ namespace HugMod
         private void EnableHug()
         {
             if (!enabled) return;
-            Locator.GetPromptManager().AddScreenPrompt(hugPrompt, PromptPosition.Center, true);
+            Locator.GetPromptManager().AddScreenPrompt(hugPrompt, PromptPosition.Center, OWInput.IsInputMode(InputMode.Character));
             canHug = true;
         }
 
@@ -280,10 +287,9 @@ namespace HugMod
 
         private void Update()
         {
-            if (OWInput.GetInputMode() == InputMode.Character) hugPrompt.SetVisibility(true);
-            else hugPrompt.SetVisibility(false);
+            hugPrompt.SetVisibility(OWInput.IsInputMode(InputMode.Character));
 
-            if (OWInput.IsNewlyPressed(InputLibrary.interactSecondary) && canHug && OWInput.GetInputMode() == InputMode.Character) BeginHugSequence();
+            if (OWInput.IsNewlyPressed(InputLibrary.interactSecondary, InputMode.Character) && canHug) BeginHugSequence();
         }
 
 
@@ -320,7 +326,7 @@ namespace HugMod
         {
             CommenceHug();
             yield return null;
-            if (isAnimated && HugAnimator.enabled && hugTrigger != "react_None")
+            if (isAnimated && hugTrigger != "react_None" && HugAnimator.enabled)
             {
                 var wasHugging = IsAnimatorControllerSwapped();
                 while (HugAnimator.GetCurrentAnimatorClipInfo(0).Length == 0) yield return null;
@@ -373,7 +379,7 @@ namespace HugMod
                 HugAnimator.SetLayerWeight(HugAnimator.GetLayerIndex("Keep Right Hand Pose"), keepHandAnimRight ? 1 : 0);
                 HugAnimator.SetLayerWeight(HugAnimator.GetLayerIndex("Keep Left Hand Pose"), keepHandAnimLeft ? 1 : 0);
             }
-            SecondaryAnimator?.Play(SecondaryAnimator.GetCurrentAnimatorStateInfo(0).shortNameHash, 0, time);
+            SecondaryAnimator.Exists()?.Play(SecondaryAnimator.GetCurrentAnimatorStateInfo(0).shortNameHash, 0, time);
             HugAnimator.SetTrigger(hugTrigger);
         }
 
@@ -411,7 +417,7 @@ namespace HugMod
                 HugAnimator.Play(stateHash, 0, time);
                 if (HugAnimator.layerCount > 1 && HugAnimator.GetCurrentAnimatorStateInfo(1).shortNameHash == stateHash) HugAnimator.Play(stateHash, 1, time);
             }
-            SecondaryAnimator?.Play(SecondaryAnimator.GetCurrentAnimatorStateInfo(0).shortNameHash, 0, time);
+            SecondaryAnimator.Exists()?.Play(SecondaryAnimator.GetCurrentAnimatorStateInfo(0).shortNameHash, 0, time);
             OnHugFinish?.Invoke();
             sequenceInProgress = false;
         }
@@ -456,6 +462,15 @@ namespace HugMod
         }
 
 
-        private void OnDestroy() { OnDestroyEvent?.Invoke(); }
+        private void OnDestroy() 
+        {
+            SetHugEnabled(false);
+            if (HugReceiver != null)
+            {
+                HugReceiver.OnGainFocus -= EnableHug;
+                HugReceiver.OnLoseFocus -= DisableHug;
+            }
+            OnDestroyEvent?.Invoke(); 
+        }
     }
 }

@@ -11,6 +11,8 @@ namespace HugMod.HuggableFrights
         private List<Vector3> localWaypoints = new();
         private int maxCapacity = 5;
 
+        private bool isInBounds = false, wasInBounds = false;
+
 
         public void Start() { ghostController = gameObject.GetComponent<GhostController>(); }
 
@@ -29,6 +31,16 @@ namespace HugMod.HuggableFrights
             //keep the feetsies on the floor where they belong
             if (Physics.Raycast(gameObject.transform.position + gameObject.transform.up.normalized, -gameObject.transform.up, out RaycastHit hit, 1.25f, OWLayerMask.physicalMask)) 
                 gameObject.transform.position = hit.point;
+
+            //use existing navigation code while within bounds
+            wasInBounds = isInBounds;
+            isInBounds = ghostController.GetNodeMap().CheckLocalPointInBounds(gameObject.transform.localPosition);
+            if (isInBounds)
+            {
+                if (!ghostController.IsMoving()) ghostController.PathfindToLocalPosition(localTarget, moveType);
+                return;
+            }
+            else if (wasInBounds) AddLocalWaypoint(gameObject.transform.localPosition);
 
             //continuously projects target onto plane going through _transform.position
             var globalTarget = ghostController.LocalToWorldPosition(localTarget);

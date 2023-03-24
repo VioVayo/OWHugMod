@@ -18,6 +18,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Gossan": {
@@ -39,6 +40,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Hornfels_1": {
@@ -60,6 +62,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Hornfels_2": {
@@ -81,6 +84,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Hal_1": {
@@ -102,6 +106,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Hal_2": {
@@ -123,6 +128,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Marl": {
@@ -144,6 +150,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Porphy": {
@@ -165,6 +172,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Gneiss": {
@@ -186,6 +194,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Rutile": {
@@ -207,6 +216,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Spinel": {
@@ -228,6 +238,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Tuff": {
@@ -249,6 +260,7 @@
     "transitionClipName": "Tuff_Idle",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Tektite": {
@@ -270,6 +282,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Mica": {
@@ -291,6 +304,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Tephra_1": {
@@ -312,6 +326,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Tephra_2": {
@@ -333,6 +348,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Tephra_3": {
@@ -354,6 +370,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Galena_1": {
@@ -375,6 +392,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Galena_2": {
@@ -396,6 +414,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Moraine": {
@@ -417,6 +436,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Arkose": {
@@ -438,6 +458,7 @@
     "transitionClipName": "Arkose_IdleRock",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Self": {
@@ -459,6 +480,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   }
 }

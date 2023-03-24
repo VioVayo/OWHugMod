@@ -18,6 +18,7 @@
     "transitionClipName": "Riebeck_Talking",
     "isTraveller": true,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": true
   },
   "Chert": {
@@ -39,6 +40,7 @@
     "transitionClipName": "Chert_Chatter_Chipper",
     "isTraveller": true,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": true
   },
   "Gabbro": {
@@ -60,6 +62,7 @@
     "transitionClipName": "Gabbro_Idle",
     "isTraveller": true,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": true
   },
   "Feldspar": {
@@ -81,6 +84,7 @@
     "transitionClipName": "Feldspar_Talking",
     "isTraveller": true,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": true
   },
   "Esker": {
@@ -102,6 +106,7 @@
     "transitionClipName": "",
     "isTraveller": true,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": true
   }
 }

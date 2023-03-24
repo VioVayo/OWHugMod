@@ -11,6 +11,7 @@ namespace HugMod
     {
         public static HugMod HugModInstance;
         public static Harmony HarmonyInstance;
+        public static HugModSettings Settings = new();
         public static RuntimeAnimatorController AltRuntimeController;
         public static bool PlayerHasDLC;
 
@@ -21,7 +22,6 @@ namespace HugMod
         {
             HugModInstance = this;
             HarmonyInstance = new Harmony("VioVayo.HugMod");
-            HugPatches.Apply();
         }
 
         private bool MurderCheck()
@@ -37,9 +37,11 @@ namespace HugMod
             {
                 ModHelper.Console.WriteLine("Murder is bad >:C", MessageType.Error);
                 this.enabled = false;
-                return; 
+                return;
             }
 
+            var settings = HugModInstance.ModHelper.Storage.Load<HugModSettings>("settings.json");
+            if (settings != null) Settings = settings;
             var hugBundle = ModHelper.Assets.LoadBundle("Assets/hug_bundle");
             AltRuntimeController = hugBundle.LoadAsset<GameObject>("Assets/HugModAssets/HugAnims.prefab").GetComponent<Animator>().runtimeAnimatorController;
 
@@ -57,7 +59,16 @@ namespace HugMod
                 TargetManager.SetUpHugTargets(loadScene);
             };
 
+            HugPatches.Apply();
             ModHelper.Console.WriteLine($"{nameof(HugMod)} is loaded! " + (PlayerHasDLC ? HuggableFrightsMain.HFEnabledMessage(false) : ""), MessageType.Success);
+        }
+
+        public static void UpdateSettings() { HugModInstance.ModHelper.Storage.Save(Settings, "settings.json"); }
+
+        public class HugModSettings
+        {
+            public bool FriendmakerModeEnabled = false;
+            public bool SillyGhostNames = false;
         }
     }
 }

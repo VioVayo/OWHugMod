@@ -15,13 +15,14 @@ namespace HugMod
         void AddHugComponent(GameObject hugObject, bool initialiseImmediately = true);
 
         /// <summary>
-        /// Initialises the hug script attached to a given GameObject
+        /// Initialises the hug script attached to a given GameObject by searching for required components in its children and adding new components if needed
         /// </summary>
         /// <param name="hugObject">The huggable GameObject, requires an OWCollider component on it or one of its children</param>
         void InitialiseHugComponent(GameObject hugObject);
 
         /// <summary>
-        /// Destroys a given GameObject's attached hug script along with all of the hug script's proxy components
+        /// Destroys a given GameObject's attached hug script, along with all proxy components added by it<br/>
+        /// Does not affect InteractReceivers even if they were added by the hug script
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         void RemoveHugComponent(GameObject hugObject);
@@ -30,61 +31,74 @@ namespace HugMod
         //-----Set stuff-----
 
         /// <summary>
-        /// Toggles huggability of a huggable GameObject, enabled by default
+        /// Toggles huggability of a huggable GameObject<br/>
+        /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="enable">False to disable hug script, true to reenable</param>
         void SetHugEnabled(GameObject hugObject, bool enable);
 
         /// <summary>
-        /// Toggles a humanoid target looking towards the player during a hug on and off, enabled by default<br/><br/>
+        /// Toggles whether a target looks at the player during a hug<br/>
+        /// Requires the target to be animated and humanoid<br/>
         /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
-        /// <param name="enable">False to disable LookIK script, true to reenable</param>
+        /// <param name="enable">False to disable Look IK script, true to reenable</param>
         void SetLookAtPlayerEnabled(GameObject hugObject, bool enable);
 
         /// <summary>
-        /// Forces a humanoid target to look towards the player even outside of a hug sequence
+        /// Forces a target to look at the player even outside of a hug sequence<br/>
+        /// Requires the target to be animated and humanoid<br/>
+        /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
-        /// <param name="enable">If true, Look IK has maximum weight regardless of whether a sequence is ongoing or not</param>
+        /// <param name="enable">If true, Look IK has maximum weight regardless of whether a sequence is ongoing or not<br/>
+        /// False to reset</param>
         void ForceLookAtPlayer(GameObject hugObject, bool enable);
 
         /// <summary>
-        /// Makes the interact prompt display the right name
+        /// Sets the name displayed in the hug interact prompt
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="name">The name to be featured in the prompt</param>
         void SetPrompt(GameObject hugObject, string name);
 
         /// <summary>
-        /// Makes the player lean in towards the right place during a hug
+        /// Sets what point the player camera should focus on during a hug<br/>
+        /// This point's position in relation to the player also decides whether a target is out of reach, and what animation is used for the player
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
-        /// <param name="focusPoint">The point to look at relative to the GameObject's Transform</param>
+        /// <param name="focusPoint">The point relative to the huggable GameObject's Transform</param>
         void SetFocusPoint(GameObject hugObject, Vector3 focusPoint);
 
         /// <summary>
-        /// Change what kind of animation is played in response to a hug
+        /// Sets what reaction animation is played when the target is hugged<br/>
+        /// Requires the target to be animated and humanoid<br/><br/>
+        /// If you have an animated but nonhumanoid target with custom animations you want to use,<br/>
+        /// use the events provided by the hug sequence to trigger your animations instead
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
-        /// <param name="hugTrigger">Best set as (int)HugTrigger</param>
+        /// <param name="hugTrigger">Best set as (int)HugTrigger, using the enum included in the IHugModApi.cs file<br/><br/>
+        /// If you have an animated humanoid target with its own custom animations you want to use,<br/>
+        /// leave the trigger as None and use the events provided by the hug sequence to trigger your animations</param>
         void SetAnimationTrigger(GameObject hugObject, int hugTrigger);
 
         /// <summary>
-        /// Decides how much of the original animation to override and which parts to keep during a hug
+        /// Decides how much of the original animation to override and which parts to keep during a hug<br/>
+        /// Requires the target to be animated and humanoid
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
-        /// <param name="fullbodyReact">If false, limits the animation override to the torso</param>
-        /// <param name="keepRightFootPosition">If true, keeps the original animation on right foot</param>
-        /// <param name="keepLeftFootPosition">If true, keeps the original animation on left foot</param>
-        /// <param name="keepRightHandPose">If true, keeps the original animation on right fingers</param>
-        /// <param name="keepLeftHandPose">If true, keeps the original animation on left fingers</param>
+        /// <param name="fullbodyReact">If false, limits the animation override to the upper body while leaving hips and legs untouched</param>
+        /// <param name="keepRightFootPosition">If true, keeps the original animation on the right foot</param>
+        /// <param name="keepLeftFootPosition">If true, keeps the original animation on the left foot</param>
+        /// <param name="keepRightHandPose">If true, keeps the original animation on the right hand fingers</param>
+        /// <param name="keepLeftHandPose">If true, keeps the original animation on the left hand fingers</param>
         void SetAnimationMasks(GameObject hugObject, bool fullbodyReact = true, bool keepRightFootPosition = false, bool keepLeftFootPosition = false, bool keepRightHandPose = false, bool keepLeftHandPose = false);
 
         /// <summary>
-        /// (optional) Makes it so a transition happens during a hug sequence, causing it to always exit into a specific AnimatorState
+        /// Makes it so an animation transition happens during a hug sequence, causing it to always exit into a specific AnimatorState<br/>
+        /// Requires the target to be animated and humanoid, and doesn't work if HugTrigger is set to None
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="transitionClip">An AnimationClip associated with the new AnimatorState</param>
@@ -93,7 +107,8 @@ namespace HugMod
         void SetUnderlayTransition(GameObject hugObject, AnimationClip transitionClip, int transitionHash, float transitionTime = 0.5f);
 
         /// <summary>
-        /// (optional) Makes it so a transition happens during a hug sequence, causing it to always exit into a specific AnimatorState<br/><br/>
+        /// Makes it so an animation transition happens during a hug sequence, causing it to always exit into a specific AnimatorState<br/>
+        /// Requires the target to be animated and humanoid, and doesn't work if HugTrigger is set to None<br/>
         /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
@@ -106,23 +121,23 @@ namespace HugMod
         //-----Get stuff-----
 
         /// <summary>
-        /// Returns the InteractReceiver associated with the hug script<br/><br/>
+        /// Returns the InteractReceiver associated with the hug script<br/>
         /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
-        /// <returns>The currently set Interactreceiver</returns>
-        InteractReceiver GetHugReceiver(GameObject hugObject);
+        /// <returns>The currently set InteractReceiver</returns>
+        InteractReceiver GetInteractReceiver(GameObject hugObject);
 
         /// <summary>
-        /// Returns the primary Animator used by the hug script<br/><br/>
+        /// Returns the primary Animator used by the hug script<br/>
         /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <returns>The currently set primary Animator</returns>
-        Animator GetHugAnimator(GameObject hugObject);
+        Animator GetPrimaryAnimator(GameObject hugObject);
 
         /// <summary>
-        /// Returns the secondary Animator used by the hug script<br/><br/>
+        /// Returns the secondary Animator used by the hug script<br/>
         /// Requires hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
@@ -146,52 +161,55 @@ namespace HugMod
         bool IsSequenceInProgress(GameObject hugObject);
 
         /// <summary>
-        /// Checks if animations are currently being altered by HugMod
+        /// Checks if animations are currently being altered by HugMod<br/>
+        /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
-        /// <returns>If true, the RuntimeAnimatorController has been replaced with HugMod's AnimatorOverrideController</returns>
+        /// <returns>If true, the Animator's RuntimeAnimatorController has been temporarily set to HugMod's AnimatorOverrideController</returns>
         bool IsAnimatorControllerSwapped(GameObject hugObject);
 
         /// <summary>
         /// Returns a method to cut an ongoing hug sequence involving a given GameObject short
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
-        /// <returns>The method that stops the sequence</returns>
+        /// <returns>The method that stops the sequence for that GameObject, can be called by itself or subscribed to an event</returns>
         Action CancelHugSequence(GameObject hugObject);
 
 
         //-----Event subs-----
 
         /// <summary>
-        /// Subscribes to an event that fires at the start of a hug sequence
+        /// Subscribes to an event that fires at the start of a hug sequence involving a given GameObject
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="action">The method to call</param>
         void OnHugStart(GameObject hugObject, Action action);
 
         /// <summary>
-        /// Subscribes to an event that fires before an underlay transition, only if transitionHash and transitionClip are both defined
+        /// Subscribes to an event that fires before an underlay transition, only if transitionHash and transitionClip are both defined<br/>
+        /// Requires the target to be animated and humanoid, and doesn't work if HugTrigger is set to None
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="action">The method to call</param>
         void OnUnderlayTransitionStart(GameObject hugObject, Action action);
 
         /// <summary>
-        /// Subscribes to an event that fires at the start of the transition out of the hug, animated targets only
+        /// Subscribes to an event that fires at the start of the transition out of the hug<br/>
+        /// Requires the target to be animated and humanoid
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="action">The method to call</param>
         void OnConcludingHug(GameObject hugObject, Action action);
 
         /// <summary>
-        /// Subscribes to an event that fires at the end of a hug sequence
+        /// Subscribes to an event that fires at the end of a hug sequence involving a given GameObject
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="action">The method to call</param>
         void OnHugFinish(GameObject hugObject, Action action);
 
         /// <summary>
-        /// Subscribes to an event that fires when the HugComponent is destroyed
+        /// Subscribes to an event that fires when the hug script attached to a given GameObject is destroyed
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="action">The method to call</param>
@@ -201,7 +219,7 @@ namespace HugMod
         //-----Change yoinkables-----
 
         /// <summary>
-        /// Sets or changes the associated InteractReceiver<br/><br/>
+        /// Sets or changes the associated InteractReceiver<br/>
         /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
@@ -210,7 +228,7 @@ namespace HugMod
         void ChangeInteractReceiver(GameObject hugObject, InteractReceiver newReceiver, bool resetTriggerCollider = false);
 
         /// <summary>
-        /// Creates a new trigger Collider of the same type and position as a given Collider, but with slightly increased scale<br/><br/>
+        /// Creates a new trigger Collider of the same type and position as a given Collider, but with slightly increased scale<br/>
         /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
@@ -218,16 +236,25 @@ namespace HugMod
         void ChangeTriggerCollider(GameObject hugObject, Collider newCompareCollider);
 
         /// <summary>
-        /// Sets or changes the associated primary Animator and related RuntimeAnimatorController<br/><br/>
+        /// Sets or changes the associated primary Animator<br/>
         /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
         /// <param name="newAnimator">The new Animator</param>
-        /// <param name="newAnimatorController">The new RuntimeAnimatorController</param>
-        void ChangePrimaryAnimator(GameObject hugObject, Animator newAnimator, RuntimeAnimatorController newAnimatorController);
+        /// <param name="resetAnimatorController">If true, automatically sets RuntimeAnimatorController to the one associated with the new Animator</param>
+        void ChangePrimaryAnimator(GameObject hugObject, Animator newAnimator, bool resetAnimatorController = true);
 
         /// <summary>
-        /// Sets or changes the associated secondary Animator<br/><br/>
+        /// Sets or changes the RuntimeAnimatorController used when resetting animations after a hug sequence<br/>
+        /// Requires the target to be animated and humanoid, and doesn't work if HugTrigger is set to None<br/>
+        /// Requires the hug script to be initialised
+        /// </summary>
+        /// <param name="hugObject">The huggable GameObject</param>
+        /// <param name="newAnimatorController">The new RuntimeAnimatorController</param>
+        void ChangeAnimatorController(GameObject hugObject, RuntimeAnimatorController newAnimatorController);
+
+        /// <summary>
+        /// Sets or changes the associated secondary Animator<br/>
         /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
@@ -235,12 +262,12 @@ namespace HugMod
         void ChangeSecondaryAnimator(GameObject hugObject, Animator newAnimator);
 
         /// <summary>
-        /// Sets or changes the associated CharacterAnimController<br/><br/>
+        /// Sets or changes the CharacterAnimController the Look IK script coordinates with<br/>
         /// Requires the hug script to be initialised
         /// </summary>
         /// <param name="hugObject">The huggable GameObject</param>
-        /// <param name="newAnimController">The new CharacterAnimController</param>
-        void ChangeCharacterAnimController(GameObject hugObject, CharacterAnimController newAnimController);
+        /// <param name="newCharacterAnimController">The new CharacterAnimController</param>
+        void ChangeCharacterAnimController(GameObject hugObject, CharacterAnimController newCharacterAnimController);
     }
 
     public enum HugTrigger

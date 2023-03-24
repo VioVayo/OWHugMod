@@ -72,21 +72,21 @@ namespace HugMod
             else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
         }
 
-        public void SetUnderlayTransition(GameObject hugObject, string transitionClipName, int transitionHash, float transitionTime)
-        {
-            if (hugObject.TryGetComponent(out HugComponent hug)) hug.SetUnderlayTransition(transitionClipName, transitionHash, transitionTime);
-            else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
-        }
-
         public void SetUnderlayTransition(GameObject hugObject, AnimationClip transitionClip, int transitionHash, float transitionTime)
         {
             if (hugObject.TryGetComponent(out HugComponent hug)) hug.SetUnderlayTransition(transitionClip, transitionHash, transitionTime);
             else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
         }
 
+        public void SetUnderlayTransition(GameObject hugObject, string transitionClipName, int transitionHash, float transitionTime)
+        {
+            if (hugObject.TryGetComponent(out HugComponent hug)) hug.SetUnderlayTransition(transitionClipName, transitionHash, transitionTime);
+            else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
+        }
+
 
         //-----Get stuff-----
-        public InteractReceiver GetHugReceiver(GameObject hugObject)
+        public InteractReceiver GetInteractReceiver(GameObject hugObject)
         {
             if (hugObject.TryGetComponent(out HugComponent hug)) return hug.HugReceiver;
             else
@@ -96,7 +96,7 @@ namespace HugMod
             }
         }
 
-        public Animator GetHugAnimator(GameObject hugObject) 
+        public Animator GetPrimaryAnimator(GameObject hugObject) 
         {
             if (hugObject.TryGetComponent(out HugComponent hug)) return hug.HugAnimator;
             else
@@ -204,9 +204,15 @@ namespace HugMod
             else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
         }
 
-        public void ChangePrimaryAnimator(GameObject hugObject, Animator newAnimator, RuntimeAnimatorController newAnimatorController)
+        public void ChangePrimaryAnimator(GameObject hugObject, Animator newAnimator, bool resetAnimatorController)
         {
-            if (hugObject.TryGetComponent(out HugComponent hug)) hug.ChangePrimaryAnimator(newAnimator, newAnimatorController);
+            if (hugObject.TryGetComponent(out HugComponent hug)) hug.ChangePrimaryAnimator(newAnimator, resetAnimatorController);
+            else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
+        }
+
+        public void ChangeAnimatorController(GameObject hugObject, RuntimeAnimatorController newAnimatorController)
+        {
+            if (hugObject.TryGetComponent(out HugComponent hug)) hug.ChangeAnimatorController(newAnimatorController);
             else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
         }
 
@@ -216,9 +222,9 @@ namespace HugMod
             else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
         }
 
-        public void ChangeCharacterAnimController(GameObject hugObject, CharacterAnimController newAnimController)
+        public void ChangeCharacterAnimController(GameObject hugObject, CharacterAnimController newCharacterAnimController)
         {
-            if (hugObject.TryGetComponent(out HugComponent hug)) hug.ChangeCharacterAnimController(newAnimController);
+            if (hugObject.TryGetComponent(out HugComponent hug)) hug.ChangeCharacterAnimController(newCharacterAnimController);
             else HugMod.HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugComponent on \"{hugObject.name}\".", MessageType.Error);
         }
     }

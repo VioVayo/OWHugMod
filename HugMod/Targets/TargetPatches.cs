@@ -1,4 +1,7 @@
 ﻿using HarmonyLib;
+using System;
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using UnityEngine;
 using static HugMod.HugMod;
 using static HugMod.Targets.TargetManager;
@@ -11,20 +14,20 @@ namespace HugMod.Targets
         public static void Apply() { new PatchClassProcessor(HarmonyInstance, typeof(GabbroPatches)).Patch(); }
 
 
-        [HarmonyPrefix] //keep hammock from receiving triggers it shouldn't
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(TornadoDialogueHandler), nameof(TornadoDialogueHandler.OnEnterTornado))]
+        public static void TornadoDialogueHandler_OnEnterTornado_Postfix()
+        {
+            GabbroHug.Exists()?.CancelHugSequence();
+        }
+
+        [HarmonyPrefix] //keep animators from crossfading when they shouldn't
         [HarmonyPatch(typeof(GabbroTravelerController), nameof(GabbroTravelerController.StartConversation))]
         public static bool GabbroTravelerController_StartConversation_Prefix()
         {
             if (GabbroHug == null || !GabbroHug.IsSequenceInProgress()) return true;
             Locator.GetTravelerAudioManager().StopAllTravelerAudio();
             return false;
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(TornadoDialogueHandler), nameof(TornadoDialogueHandler.OnEnterTornado))]
-        public static void TornadoDialogueHandler_OnEnterTornado_Postfix()
-        {
-            GabbroHug?.CancelHugSequence();
         }
     }
 
@@ -35,65 +38,84 @@ namespace HugMod.Targets
         public static void Apply() { new PatchClassProcessor(HarmonyInstance, typeof(SolanumPatches)).Patch(); }
 
 
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(SolanumAnimController), nameof(SolanumAnimController.PlayRaiseCairns))]
-        public static bool SolanumAnimController_PlayRaiseCairns_Prefix()
+        public static void SolanumAnimController_PlayRaiseCairns_Postfix()
         {
-            SolanumHug?.SetHugEnabled(false);
-            return true;
+            SolanumHug.Exists()?.SetHugEnabled(false);
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(SolanumAnimController), nameof(SolanumAnimController.Audio_ExitRaiseCairn))]
         public static void SolanumAnimController_Audio_ExitRaiseCairn_Postfix()
         {
-            SolanumHug?.SetHugEnabled(true);
+            SolanumHug.Exists()?.SetHugEnabled(true);
         }
 
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(SolanumAnimController), nameof(SolanumAnimController.StartWritingMessage))]
-        public static bool SolanumAnimController_StartWritingMessage_Prefix()
+        public static void SolanumAnimController_StartWritingMessage_Postfix()
         {
-            SolanumHug?.SetHugEnabled(false);
-            return true;
+            SolanumHug.Exists()?.SetHugEnabled(false);
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(SolanumAnimController), nameof(SolanumAnimController.StopWritingMessage))]
         public static void SolanumAnimController_StopWritingMessage_Postfix()
         {
-            SolanumHug?.SetHugEnabled(true);
+            SolanumHug.Exists()?.SetHugEnabled(true);
         }
 
-        [HarmonyPrefix] //make IK work without required parameters
+        [HarmonyTranspiler] //make IK work without required parameters
         [HarmonyPatch(typeof(SolanumAnimController), nameof(SolanumAnimController.OnAnimatorIK))]
-        public static bool SolanumAnimController_OnAnimatorIK_Prefix(SolanumAnimController __instance)
+        public static IEnumerable<CodeInstruction> SolanumAnimController_OnAnimatorIK_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            if (SolanumHug == null || !SolanumHug.IsSequenceInProgress()) return true;
-            __instance._animator.SetLookAtPosition(__instance.gameObject.transform.TransformPoint(__instance._localLookPosition));
-            __instance._animator.SetLookAtWeight(1, 0.5f, 0.9f, 0f);
-            __instance._animator.SetIKPosition(AvatarIKGoal.LeftHand, __instance._leftHandTransform.position);
-            __instance._animator.SetIKRotation(AvatarIKGoal.LeftHand, __instance._leftHandTransform.rotation * Quaternion.AngleAxis(-90f, Vector3.up));
-            __instance._animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, 1);
-            __instance._animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1);
-            __instance._animator.SetIKPosition(AvatarIKGoal.RightHand, __instance._rightHandTransform.position);
-            __instance._animator.SetIKPositionWeight(AvatarIKGoal.RightHand, 0.15f);
-            return false;
+            var matcher = new CodeMatcher(instructions, generator).MatchForward(false,
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(SolanumAnimController), nameof(SolanumAnimController._animator))),
+                new CodeMatch(OpCodes.Ldstr),
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Animator), nameof(Animator.GetFloat), new Type[] { typeof(string) }))
+            );
+
+            matcher.Repeat(matcher => {
+                matcher.CreateLabel(out Label doGetFloat);
+                matcher.CreateLabelAt(matcher.Pos + 4, out Label skipGetFloat);
+
+                matcher.InsertAndAdvance( //move pointer past inserted code
+                    Transpilers.EmitDelegate(() => { return SolanumHug != null && SolanumHug.IsSequenceInProgress(); }),
+                    new CodeInstruction(OpCodes.Brfalse, doGetFloat),
+                    new CodeInstruction(OpCodes.Ldc_R4, 1f),
+                    new CodeInstruction(OpCodes.Br, skipGetFloat)
+                ).Advance(4); //move pointer past matched code, to not match with the same block again on repeat
+            });
+
+            return matcher.InstructionEnumeration();
         }
 
-        [HarmonyPrefix] //remove attempts to get AnimatorStateEvents during hug sequence
+        [HarmonyTranspiler] //remove attempts to get AnimatorStateEvents during hug sequence to avoid NREs
         [HarmonyPatch(typeof(SolanumAnimController), nameof(SolanumAnimController.LateUpdate))]
-        public static bool SolanumAnimController_LateUpdate_Prefix(SolanumAnimController __instance)
+        public static IEnumerable<CodeInstruction> SolanumAnimController_LateUpdate_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            if (SolanumHug == null || !SolanumHug.IsSequenceInProgress()) return true;
-            Quaternion quaternion = Quaternion.LookRotation(__instance._playerCameraTransform.position - __instance._headBoneTransform.position, __instance.gameObject.transform.up);
-            __instance._currentLookRotation = __instance._lookSpring.Update(__instance._currentLookRotation, quaternion, Time.deltaTime);
-            Vector3 vector = __instance._headBoneTransform.position + __instance._currentLookRotation * Vector3.forward;
-            __instance._localLookPosition = __instance.gameObject.transform.InverseTransformPoint(vector);
-            return false;
+            var matcher = new CodeMatcher(instructions, generator).MatchForward(false, new CodeMatch(
+                OpCodes.Callvirt, AccessTools.Method(typeof(AnimatorStateEvents), "AnimatorStateEvents.add_OnEnterStateEvents", new Type[] { typeof(AnimatorStateEvents.StateEvent) })
+            )).Advance(1);
+
+            matcher.CreateLabel(out Label skipGetAnimatorStateEvents);
+
+            matcher.MatchBack(true, 
+                new CodeMatch(OpCodes.Ldarg_0),
+                new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(SolanumAnimController), nameof(SolanumAnimController._animatorStateEvents))),
+                new CodeMatch(OpCodes.Ldnull),
+                new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(UnityEngine.Object), "Object.op_Equality", new Type[] { typeof(UnityEngine.Object), typeof(UnityEngine.Object) }))
+            ).Insert(
+                Transpilers.EmitDelegate(() => { return SolanumHug != null && SolanumHug.IsSequenceInProgress(); }),
+                new CodeInstruction(OpCodes.Brtrue, skipGetAnimatorStateEvents)
+            );
+
+            return matcher.InstructionEnumeration();
         }
 
-        [HarmonyPrefix]
+        [HarmonyPrefix] //freeze processes during hug sequence to prevent unaccounted for state alterations
         [HarmonyPatch(typeof(NomaiConversationManager), nameof(NomaiConversationManager.Update))]
         public static bool NomaiConversationManager_Update_Prefix()
         {
@@ -130,26 +152,28 @@ namespace HugMod.Targets
         [HarmonyPatch(typeof(PrisonerDirector), nameof(PrisonerDirector.OnPrisonerReadyToReceiveTorch))]
         public static void PrisonerDirector_OnPrisonerReadyToReceiveTorch_Postfix()
         {
-            PrisonerHug?.SetHugEnabled(true);
+            PrisonerHug.Exists()?.SetHugEnabled(true);
         }
 
-        [HarmonyPrefix]
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(PrisonerEffects), nameof(PrisonerEffects.PlayFarewellBowAnimation))]
-        public static bool PrisonerEffects_PlayFarewellBowAnimation_Prefix()
+        public static void PrisonerEffects_PlayFarewellBowAnimation_Postfix()
         {
-            PrisonerHug?.SetHugEnabled(false);
-            return true;
+            PrisonerHug.Exists()?.SetHugEnabled(false);
         }
 
-        [HarmonyPrefix] //don't unpause movement during hugs
+        [HarmonyPrefix] //don't unpause movement during hugs, pt.1
         [HarmonyPatch(typeof(PrisonerBrain), nameof(PrisonerBrain.FixedUpdate))]
-        public static bool PrisonerBrain_FixedUpdate_Prefix(PrisonerBrain __instance)
+        public static void PrisonerBrain_FixedUpdate_Prefix(PrisonerBrain __instance, out bool __state)
         {
-            if (PrisonerHug == null || !PrisonerHug.IsSequenceInProgress()) return true;
-            __instance._controller.FixedUpdate_Controller();
-            __instance._sensors.FixedUpdate_Sensors();
-            __instance._data.FixedUpdate_Data(__instance._controller, __instance._sensors);
-            return false;
+            __state = __instance._controller._movementPaused;
+        }
+
+        [HarmonyPostfix] //don't unpause movement during hugs, pt.2
+        [HarmonyPatch(typeof(PrisonerBrain), nameof(PrisonerBrain.FixedUpdate))]
+        public static void PrisonerBrain_FixedUpdate_Postfix(PrisonerBrain __instance, bool __state)
+        {
+            if (PrisonerHug != null && PrisonerHug.IsSequenceInProgress()) __instance._controller.SetMovementPaused(__state);
         }
     }
 

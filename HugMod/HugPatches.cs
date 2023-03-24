@@ -20,7 +20,7 @@ namespace HugMod
         public static IEnumerable<CodeInstruction> PlayerCharacterController_UpdateMovement_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             var matcher = new CodeMatcher(instructions).MatchForward(false, 
-                new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(OWInput), "OWInput.GetAxisValue", new Type[] { typeof(IInputCommands), typeof(InputMode) })),
+                new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(OWInput), nameof(OWInput.GetAxisValue), new Type[] { typeof(IInputCommands), typeof(InputMode) })),
                 new CodeMatch(OpCodes.Stloc_0)
             ).Advance(2);
 
@@ -44,15 +44,6 @@ namespace HugMod
         {
             // Filter out goofy error that doesn't actually break anything
             return !message.EndsWith(") is out of bounds (size=0)");
-        }
-
-
-        //ONLY FOR DEBUG
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(ShipLogManager), nameof(ShipLogManager.CheckForCompletionAchievement))]
-        public static bool ShipLogManager_CheckForCompletionAchievement_Prefix()
-        {
-            return false;
         }
     }
 }

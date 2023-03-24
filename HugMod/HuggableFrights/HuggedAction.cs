@@ -21,7 +21,7 @@ namespace HugMod.HuggableFrights
         private float hugStunTime = 30;
         private float focusDelay = 0.4f;
         private float followDistance = 7;
-        private float followLimit = 15;
+        private float followLimit = 20;
         private float maxPositionOffset = 3.5f;
 
         private int chanceToStopWhileMoving = 1;

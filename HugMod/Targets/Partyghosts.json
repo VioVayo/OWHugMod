@@ -17,7 +17,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   },
   "OwlProxy2": {
@@ -38,7 +39,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   },
   "OwlProxy3": {
@@ -59,7 +61,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   },
   "OwlProxy4": {
@@ -80,7 +83,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   },
   "OwlProxy5": {
@@ -101,7 +105,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   },
   "OwlProxy6": {
@@ -122,7 +127,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   },
   "OwlProxy7": {
@@ -143,7 +149,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   },
   "OwlProxy8": {
@@ -164,7 +171,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   },
   "OwlProxy9": {
@@ -185,7 +193,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   },
   "OwlProxy10": {
@@ -206,7 +215,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   },
   "OwlProxy11": {
@@ -227,7 +237,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   },
   "OwlProxy12": {
@@ -248,7 +259,8 @@
     "transitionHash": 0,
     "transitionClipName": "",
     "isTraveller": false,
-    "isOwl": true,
+    "isOwl": false,
+    "isPartyOwl": true,
     "isAtEye": false
   }
 }

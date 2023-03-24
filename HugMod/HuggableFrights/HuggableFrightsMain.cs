@@ -6,14 +6,11 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using static HugMod.HugMod;
-using static HugMod.HugModUtilities;
 
 namespace HugMod.HuggableFrights
 {
     public class HuggableFrightsMain
     {
-        public static bool IsHuggableFrightsEnabled { get; private set; } = false;
-
         public static List<GhostBrain> OwlBrains { get; private set; } = new();
 
         public static GhostAction.Name HuggedActionName { get; private set; }
@@ -36,7 +33,6 @@ namespace HugMod.HuggableFrights
         {
             if (HugModInstance.ModHelper.Interaction.ModExists("Leadpogrommer.PeacefulGhosts")) return;
 
-            IsHuggableFrightsEnabled = HugModInstance.ModHelper.Storage.Load<bool>("settings.json");
             HuggedActionName = EnumUtils.Create<GhostAction.Name>("Hugged");
             WitnessedHugActionName = EnumUtils.Create<GhostAction.Name>("WitnessedHug");
             ReturnActionName = EnumUtils.Create<GhostAction.Name>("Return");
@@ -57,11 +53,11 @@ namespace HugMod.HuggableFrights
             if (!setupComplete) return;
 
             var brain = hugComponent.gameObject.GetComponent<GhostBrain>();
-            brain._actions = AddToArray(brain._actions, HuggedActionName, WitnessedHugActionName, ReturnActionName);
+            brain._actions = brain._actions.AddToArray(HuggedActionName, WitnessedHugActionName, ReturnActionName);
             brain._effects.OnGrabComplete += () => { hugComponent.SetHugEnabled(false); };
 
             hugComponent.gameObject.AddComponent<GhostNavigation>();
-            hugComponent.HugReceiver._interactRange = owlReceiverRange;
+            hugComponent.HugReceiver.SetInteractRange(owlReceiverRange);
             hugComponent.OnHugStart += () => { brain.ChangeAction(HuggedActionName); };
             hugComponent.OnHugFinish += () => { if (brain._currentAction.GetName() == HuggedActionName) brain._currentAction._enterTime = Time.time; };
 
@@ -70,7 +66,7 @@ namespace HugMod.HuggableFrights
 
         public static string HFEnabledMessage(bool wasChanged)
         {
-            return setupComplete ? $"{optionText} is" + (wasChanged ? " now: " : ": ") + (IsHuggableFrightsEnabled ? "Enabled" : "Disabled") : "";
+            return setupComplete ? $"{optionText} is" + (wasChanged ? " now: " : ": ") + (Settings.FriendmakerModeEnabled ? "Enabled" : "Disabled") : "";
         }
 
 
@@ -87,21 +83,21 @@ namespace HugMod.HuggableFrights
             GameObject.Destroy(settingsOptionObj.GetComponentInChildren<ReducedFrightsPopup>());
 
             var toggleElement = settingsOptionObj.GetComponent<ToggleElement>();
-            toggleElement.Initialize(IsHuggableFrightsEnabled);
+            toggleElement.Initialize(Settings.FriendmakerModeEnabled);
             toggleElement.SetDisplayText(optionText);
             toggleElement.SetTooltipText(UITextType.None);
             toggleElement._overrideTooltipText = optionTooltipText;
 
             //make keyboard-selectable
             var menu = menuObj.GetComponentInChildren<Menu>();
-            menu._menuOptions = AddToArray(menu._menuOptions, toggleElement);
+            menu._menuOptions = menu._menuOptions.AddToArray(toggleElement);
             Menu.SetVerticalNavigation(menu, menu._menuOptions);
 
             //toggle
             var toggleButton = settingsOptionObj.GetComponent<Button>();
             toggleButton.onClick.AddListener(() =>
             {
-                if (toggleElement._value != 1) return;
+                if (toggleElement._value != 1) return; //the value is changed before this action is called so this checks for what it's toggled *to*
                 var popup = HugModInstance.ModHelper.Menus.PopupManager.CreateMessagePopup(popupText, true, popupConfirmText, popupCancelText);
                 popup.OnCancel += toggleElement.Toggle;
             });
@@ -115,16 +111,16 @@ namespace HugMod.HuggableFrights
 
         private static void HuggableFrightsToggle(bool enable)
         {
-            if (enable == IsHuggableFrightsEnabled) return;
-            IsHuggableFrightsEnabled = enable;
-            HugModInstance.ModHelper.Storage.Save(IsHuggableFrightsEnabled, "settings.json");
+            if (enable == Settings.FriendmakerModeEnabled) return;
+            Settings.FriendmakerModeEnabled = enable;
             OnHuggableFrightsToggle?.Invoke(enable);
             HugModInstance.ModHelper.Console.WriteLine(HFEnabledMessage(true), MessageType.Success);
+            UpdateSettings();
         }
 
         private static void EnableOwlToggle(HugComponent hugComponent)
         {
-            if (!IsHuggableFrightsEnabled) hugComponent.SetHugEnabled(false);
+            if (!Settings.FriendmakerModeEnabled) hugComponent.SetHugEnabled(false);
             OnHuggableFrightsToggle += hugComponent.SetHugEnabled;
             hugComponent.OnDestroyEvent += () => { OnHuggableFrightsToggle -= hugComponent.SetHugEnabled; };
         }

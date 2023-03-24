@@ -18,6 +18,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Charles": {
@@ -39,6 +40,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "John": {
@@ -60,6 +62,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Josh": {
@@ -81,6 +84,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Chuck": {
@@ -102,6 +106,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Greg": {
@@ -123,6 +128,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Tom": {
@@ -144,6 +150,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Will": {
@@ -165,6 +172,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Jean": {
@@ -186,6 +194,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Mike": {
@@ -207,6 +216,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Richard": {
@@ -228,6 +238,29 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
+    "isAtEye": false
+  },
+  "Ben": {
+    "name": "Ben",
+    "objectName": "Prefab_IP_GhostBird_TheCollector",
+    "hugTrigger": 10,
+    "focusPoint": {
+      "Item1": 0.0,
+      "Item2": 2.1,
+      "Item3": 0.35
+    },
+    "fullbodyReact": true,
+    "keepFootAnimRight": false,
+    "keepFootAnimLeft": false,
+    "keepHandAnimRight": false,
+    "keepHandAnimLeft": false,
+    "transitionTime": 0.5,
+    "transitionHash": 640249298,
+    "transitionClipName": "Ghostbird_Idle_Unaware",
+    "isTraveller": false,
+    "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Bob": {
@@ -249,6 +282,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Dan": {
@@ -270,6 +304,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "George": {
@@ -291,6 +326,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Steve": {
@@ -312,6 +348,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Frank": {
@@ -333,6 +370,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Carl": {
@@ -354,6 +392,7 @@
     "transitionClipName": "Ghostbird_Idle_Unaware",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   }
 }

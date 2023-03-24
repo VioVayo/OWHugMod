@@ -18,6 +18,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": false
   },
   "Prisoner": {
@@ -39,9 +40,10 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": true,
+    "isPartyOwl": false,
     "isAtEye": false
   },
-  "Eye_Solanum": {
+  "Solanum_Eye": {
     "name": "Solanum",
     "objectName": "Solanum",
     "hugTrigger": 9,
@@ -60,9 +62,10 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": true
   },
-  "Eye_Prisoner_1": {
+  "Prisoner_Eye_1": {
     "name": "the Prisoner",
     "objectName": "Prisoner_Choice",
     "hugTrigger": 10,
@@ -81,9 +84,10 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": true
   },
-  "Eye_Prisoner_2": {
+  "Prisoner_Eye_2": {
     "name": "the Prisoner",
     "objectName": "Prisoner_Campfire",
     "hugTrigger": 10,
@@ -102,6 +106,7 @@
     "transitionClipName": "",
     "isTraveller": false,
     "isOwl": false,
+    "isPartyOwl": false,
     "isAtEye": true
   }
 }
