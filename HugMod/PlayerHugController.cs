@@ -5,12 +5,13 @@ using static HugMod.HugMod;
 
 namespace HugMod
 {
-    public class PlayerHugController
+    public class PlayerHugController : MonoBehaviour
     {
         public static bool WalkingTowardsHugTarget = false;
         public static float WalkingTowardsHugSpeed = 0.7f;
         public static GameObject PlayerCamera { get; private set; }
 
+        private static PlayerHugController playerHugInstance;
         private static GameObject playerObject;
         private static GameObject[] arms;
         private static OWAudioSource sound;
@@ -21,19 +22,28 @@ namespace HugMod
         private static AnimationClip idleClip, idleClipSuit;
         private static GameObject cameraParent, cameraAttach;
         private static float playerCrossfadeTime = 0.5f;
-        private static bool cameraAttached = false, concludingHug = false;
+        private static bool cameraAttached, concludingHug;
 
 
-        public static IEnumerator SetUpPlayer()
+        public static void SetUpPlayer()
         {
-            playerObject = GameObject.Find("Player_Body/Traveller_HEA_Player_v2");
+            if (playerHugInstance == null) playerHugInstance = GameObject.Find("Player_Body/Traveller_HEA_Player_v2").AddComponent<PlayerHugController>();
+            playerHugInstance.StartCoroutine(SetUpRoutine());
+        }
+
+        private static IEnumerator SetUpRoutine()
+        {
+            cameraAttached = false; 
+            concludingHug = false;
+
+            playerObject = playerHugInstance.gameObject;
             var armR = playerObject.transform.Find("player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_RightArm").gameObject;
             var armL = playerObject.transform.Find("player_mesh_noSuit:Traveller_HEA_Player/player_mesh_noSuit:Player_LeftArm").gameObject;
             var armSuitR = playerObject.transform.Find("Traveller_Mesh_v01:Traveller_Geo/Traveller_Mesh_v01:PlayerSuit_RightArm").gameObject;
             var armSuitL = playerObject.transform.Find("Traveller_Mesh_v01:Traveller_Geo/Traveller_Mesh_v01:PlayerSuit_LeftArm").gameObject;
             arms = new[] { armR, armL, armSuitR, armSuitL };
 
-            yield return null;
+            yield return new WaitForEndOfFrame();
 
             PlayerCamera = Locator.GetPlayerCamera().gameObject;
             cameraParent = PlayerCamera.transform.parent.gameObject;
@@ -44,11 +54,13 @@ namespace HugMod
             playerAnimator = playerObject.GetComponent<Animator>();
             playerOverrider.runtimeAnimatorController = AltRuntimeController;
 
+            playerObject.SetActive(false);
             sound = playerObject.AddComponent<OWAudioSource>();
-            sound.playOnAwake = false;
             sound.SetTrack(OWAudioMixer.TrackName.Player_External);
+            playerObject.SetActive(true);
             sound.AssignAudioLibraryClip(PlayerHasDLC ? AudioType.Ghost_Grab_Contact : AudioType.ImpactLowSpeed);
             sound.SetMaxVolume(PlayerHasDLC ? 0.6f : 0.3f);
+            sound.playOnAwake = false;
         }
 
 
@@ -57,12 +69,12 @@ namespace HugMod
         public static void LockPlayerControl(Transform baseTransform, Vector3 focus)
         {
             OWInput.ChangeInputMode(InputMode.None);
-            Locator.GetPlayerTransform().GetRequiredComponent<PlayerLockOnTargeting>().LockOn(baseTransform, focus, 4.5f);
+            Locator.GetPlayerTransform()?.GetRequiredComponent<PlayerLockOnTargeting>()?.LockOn(baseTransform, focus, 4.5f);
         }
 
         public static void UnlockPlayerControl()
         {
-            Locator.GetPlayerTransform().GetRequiredComponent<PlayerLockOnTargeting>().BreakLock();
+            Locator.GetPlayerTransform()?.GetRequiredComponent<PlayerLockOnTargeting>()?.BreakLock();
             OWInput.ChangeInputMode(InputMode.Character);
         }
 
@@ -81,7 +93,7 @@ namespace HugMod
                 playerOverrider["clip_Placeholder02"] = PlayerState._isWearingSuit ? idleClipSuit : idleClip;
                 playerAnimator.runtimeAnimatorController = playerOverrider;
 
-                HugModInstance.StartCoroutine(CameraAttached());
+                playerHugInstance.StartCoroutine(CameraAttached());
             }
 
             var animStateName = "hug_" + ((height > 15) ? "upright" : (height > 11) ? "hunched" : "crouching");
@@ -93,7 +105,7 @@ namespace HugMod
         {
             if (concludingHug) return;
             if (playerAnimator.runtimeAnimatorController != playerOverrider) ResetPlayer();
-            else HugModInstance.StartCoroutine(ResetPlayer(playerCrossfadeTime));
+            else playerHugInstance.StartCoroutine(ResetPlayer(playerCrossfadeTime));
         }
 
 

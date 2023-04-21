@@ -34,7 +34,7 @@ namespace HugMod
         private Vector3 currentLookTarget;
         private float currentLookWeight;
         private int stateHash;
-        private bool isAnimated = false, canHug = false, sequenceInProgress = false;
+        private bool canHug = false, sequenceInProgress = false;
 
         private static Coroutine unstickRoutine;
         private static float unstickTime = 3;
@@ -92,8 +92,7 @@ namespace HugMod
                 lookSpring = new(50, 14, 1);
             }
 
-            isAnimated = HugAnimator != null && HugAnimator.avatar.isHuman;
-            if (isAnimated)
+            if (IsAnimated())
             {
                 initialRuntimeController = HugAnimator.runtimeAnimatorController;
                 hugIK = HugAnimator.gameObject.AddComponent<HugIK>();
@@ -166,12 +165,7 @@ namespace HugMod
 
 
         // Set, gets, changes
-        public void SetHugEnabled(bool enable)
-        {
-            if (!enable && HugReceiver != null && HugReceiver._focused) DisableHug();
-            enabled = enable;
-            if (enable && HugReceiver != null && HugReceiver._focused) EnableHug();
-        }
+        public void SetHugEnabled(bool enable) { enabled = enable; }
         public void SetLookAtPlayerEnabled(bool enable) 
         {
             if (hugIK != null) hugIK.enabled = enable; 
@@ -213,6 +207,7 @@ namespace HugMod
             transitionClip = this.transitionClip; 
         }
 
+        public bool IsAnimated() => HugAnimator != null && HugAnimator.avatar.isHuman;
         public bool IsSequenceInProgress() => sequenceInProgress;
         public bool IsAnimatorControllerSwapped() => (HugAnimator != null) && (HugAnimator.runtimeAnimatorController == hugOverrider);
 
@@ -239,12 +234,11 @@ namespace HugMod
         public void ChangePrimaryAnimator(Animator newAnimator, bool resetAnimatorController = true)
         {
             HugAnimator = newAnimator;
-            isAnimated = newAnimator != null && newAnimator.avatar.isHuman;
-            if (resetAnimatorController && isAnimated) initialRuntimeController = newAnimator.runtimeAnimatorController;
+            if (resetAnimatorController && IsAnimated()) initialRuntimeController = newAnimator.runtimeAnimatorController;
 
-            if ((hugIK == null && !isAnimated) || (hugIK != null && isAnimated && hugIK.gameObject == newAnimator.gameObject)) return;
+            if ((hugIK == null && !IsAnimated()) || (hugIK != null && IsAnimated() && hugIK.gameObject == newAnimator.gameObject)) return;
             hugIK.Exists()?.Remove();
-            hugIK = newAnimator.Exists()?.gameObject.AddComponent<HugIK>();
+            if (IsAnimated()) hugIK = newAnimator.gameObject.AddComponent<HugIK>();
             hugIK.Exists()?.SetHugComponent(this);
         }
         public void ChangeAnimatorController(RuntimeAnimatorController newAnimatorController) { initialRuntimeController = newAnimatorController; }
@@ -257,25 +251,35 @@ namespace HugMod
 
 
         //Hug stuff
+        private void OnEnable()
+        {
+            if (HugReceiver != null && HugReceiver._focused) EnableHug();
+        }
+
+        private void OnDisable()
+        {
+            if (HugReceiver != null && HugReceiver._focused) DisableHug();
+            if (sequenceInProgress) CancelHugSequence();
+        }
+
         private void EnableHug()
         {
             if (!enabled) return;
-            Locator.GetPromptManager().AddScreenPrompt(hugPrompt, PromptPosition.Center, OWInput.IsInputMode(InputMode.Character));
+            Locator.GetPromptManager()?.AddScreenPrompt(hugPrompt, PromptPosition.Center, OWInput.IsInputMode(InputMode.Character));
             canHug = true;
         }
 
         private void DisableHug()
         {
-            if (!enabled) return;
-            Locator.GetPromptManager().RemoveScreenPrompt(hugPrompt);
+            Locator.GetPromptManager()?.RemoveScreenPrompt(hugPrompt);
             canHug = false;
         }
 
         public void OnAnimatorIK()
         {
-            if (!isAnimated || PlayerCamera == null) return;
+            if (!IsAnimated() || PlayerCamera == null) return;
             var position = PlayerCamera.transform.position;
-            var currentWeightTarget = (sequenceInProgress || forceLookAtPlayer) ? 1f : 0f;
+            var currentWeightTarget = (enabled && (sequenceInProgress || forceLookAtPlayer)) ? 1f : 0f;
             currentLookTarget = lookSpring.Update(currentLookTarget, position, Time.deltaTime);
             currentLookWeight = Mathf.Lerp(currentLookWeight, currentWeightTarget, Time.deltaTime * 2.5f);
             if (characterAnimController == null || characterAnimController._currentLookWeight < currentLookWeight)
@@ -306,15 +310,7 @@ namespace HugMod
         private IEnumerator Unstick(float delay)
         {
             yield return new WaitForSeconds(delay);
-            Unstick();
-        }
-
-        private void Unstick()
-        {
-            WalkingTowardsHugTarget = false;
-            UnlockPlayerControl();
-            sequenceInProgress = false;
-            HugModInstance.ModHelper.Console.WriteLine("Hug attempt failed: Target could not be reached.", MessageType.Warning);
+            CancelHugSequence();
         }
 
         public void OnTriggerStay(Collider collider) 
@@ -326,7 +322,7 @@ namespace HugMod
         {
             CommenceHug();
             yield return null;
-            if (isAnimated && hugTrigger != "react_None" && HugAnimator.enabled)
+            if (IsAnimated() && HugAnimator.enabled && hugTrigger != "react_None")
             {
                 var wasHugging = IsAnimatorControllerSwapped();
                 while (HugAnimator.GetCurrentAnimatorClipInfo(0).Length == 0) yield return null;
@@ -339,12 +335,12 @@ namespace HugMod
             }
             while (OWInput.IsPressed(InputLibrary.interactSecondary)) yield return null;
             ConcludeHug();
-            if (!isAnimated || hugTrigger == "react_None" || !HugAnimator.enabled) yield break;
+            if (!IsAnimatorControllerSwapped()) yield break; //everything after this has only to do with resetting the animator
 
             var hugLayer = HugAnimator.GetLayerIndex("Hug Layer");
             while (!HugAnimator.GetNextAnimatorStateInfo(hugLayer).IsName("end_hug")) yield return null;
             if (unstickRoutine != null) StopCoroutine(unstickRoutine);
-            StartCoroutine(ResetAnimator(0.7f)); //min 0.5f
+            StartCoroutine(ResetAnimator(0.7f)); //min 0.5f to give enough time for the transition to play
         }
 
         private void CommenceHug()
@@ -394,28 +390,32 @@ namespace HugMod
         private void ConcludeHug()
         {
             PlayerEndHug();
-            if (!isAnimated || !HugAnimator.enabled)
+            if (!IsAnimatorControllerSwapped() && !(IsAnimated() && HugAnimator.enabled))
             {
                 OnHugFinish?.Invoke();
                 sequenceInProgress = false;
                 return;
             }
-            HugAnimator.SetTrigger("end_hug");
-            unstickRoutine = StartCoroutine(ResetAnimator(hugTrigger == "react_None" ? 1.2f : unstickTime));
+            if (IsAnimatorControllerSwapped()) 
+            { 
+                HugAnimator.SetTrigger("end_hug");
+                unstickRoutine = StartCoroutine(ResetAnimator(unstickTime));
+            } 
+            else StartCoroutine(ResetAnimator(1.2f)); //if controller wasn't swapped but the target is still animated there should be a little delay for look IK to persist through
             OnConcludingHug?.Invoke();
         }
 
         private IEnumerator ResetAnimator(float delay)
         {
-            yield return new WaitForSeconds(delay);
-            while (PlayerState._inConversation) yield return null;
+            yield return new WaitForSeconds(delay); //if conversation was started in the middle of the transition taking place during this delay -
+            while (PlayerState._inConversation) yield return null; //keep animators swapped until the conversation concludes to avoid jumpy animation transitions
 
             var time = HugAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime;
             if (IsAnimatorControllerSwapped())
             {
                 HugAnimator.runtimeAnimatorController = initialRuntimeController;
                 HugAnimator.Play(stateHash, 0, time);
-                if (HugAnimator.layerCount > 1 && HugAnimator.GetCurrentAnimatorStateInfo(1).shortNameHash == stateHash) HugAnimator.Play(stateHash, 1, time);
+                if (HugAnimator.layerCount > 1 && HugAnimator.GetCurrentAnimatorStateInfo(1).shortNameHash == stateHash) HugAnimator.Play(stateHash, 1, time); //some of them have two, idk
             }
             SecondaryAnimator.Exists()?.Play(SecondaryAnimator.GetCurrentAnimatorStateInfo(0).shortNameHash, 0, time);
             OnHugFinish?.Invoke();
@@ -429,27 +429,32 @@ namespace HugMod
             CancelPending();
             if (WalkingTowardsHugTarget)
             {
-                Unstick();
+                WalkingTowardsHugTarget = false;
+                UnlockPlayerControl();
+                sequenceInProgress = false;
+                HugModInstance.ModHelper.Console.WriteLine("Hug attempt failed: Target could not be reached.", MessageType.Warning);
                 return;
             }
             PlayerEndHug();
-            if (isAnimated && IsAnimatorControllerSwapped())
+            if (IsAnimated() && IsAnimatorControllerSwapped())
             {
-                var hugLayer = HugAnimator.GetLayerIndex("Hug Layer");
-                if (!HugAnimator.GetNextAnimatorStateInfo(hugLayer).IsName("end_hug")) HugAnimator.CrossFadeInFixedTime("end_hug", transitionTime, hugLayer);
-                StartCoroutine(ResetAnimator(transitionTime));
+                if (HugAnimator.gameObject.activeInHierarchy)
+                {
+                    var hugLayer = HugAnimator.GetLayerIndex("Hug Layer");
+                    if (!HugAnimator.GetNextAnimatorStateInfo(hugLayer).IsName("end_hug")) HugAnimator.CrossFadeInFixedTime("end_hug", transitionTime, hugLayer);
+                    hugIK.StartCoroutine(ResetAnimator(transitionTime)); //start this on a separate MonoBehaviour on the same GO as the animator, in case this method was triggered by OnDestroy
+                    return;
+                }
+                else HugAnimator.runtimeAnimatorController = initialRuntimeController;
             }
-            else
-            {
-                OnHugFinish?.Invoke();
-                sequenceInProgress = false;
-            }
+            OnHugFinish?.Invoke();
+            sequenceInProgress = false;
         }
 
         private void CancelPending()
         {
             StopAllCoroutines();
-            if (isAnimated)
+            if (IsAnimated())
             {
                 if (!IsAnimatorControllerSwapped())
                 {
@@ -462,9 +467,8 @@ namespace HugMod
         }
 
 
-        private void OnDestroy() 
+        private void OnDestroy()
         {
-            SetHugEnabled(false);
             if (HugReceiver != null)
             {
                 HugReceiver.OnGainFocus -= EnableHug;

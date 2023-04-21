@@ -55,7 +55,7 @@ namespace HugMod
             {
                 if (loadScene != OWScene.SolarSystem && loadScene != OWScene.EyeOfTheUniverse) return;
 
-                StartCoroutine(PlayerHugController.SetUpPlayer());
+                PlayerHugController.SetUpPlayer();
                 TargetManager.SetUpHugTargets(loadScene);
             };
 
