@@ -25,9 +25,9 @@ namespace HugMod.HuggableFrights
 
         public override float CalculateUtility() 
         {
-            if (ghostNavigation.CheckForEmpty()) return -200;
-            if (!_running || GetActionTimeElapsed() <= questioningDecisionsTime) return 200;
-            if (_controller.GetNodeMap().CheckLocalPointInBounds(_transform.localPosition)) return 91; //allows chase if seen
+            if (ghostNavigation.IsWaypointsListEmpty()) return -200;
+            if (_running ? GetActionTimeElapsed() <= questioningDecisionsTime : (_data.previousAction != ReturnActionName && _data.currentAction != Name.Chase)) return 200;
+            if (_controller.GetNodeMap().CheckLocalPointInBounds(_transform.localPosition)) return 91; //allows chase if seen while in bounds
             return 99; //allows grab if in contact
         }
 
@@ -43,19 +43,16 @@ namespace HugMod.HuggableFrights
         public override bool Update_Action()
         {
             if (returnFromOutOfAreaBounds && _controller.GetNodeMap().CheckLocalPointInBounds(_transform.localPosition)) ghostNavigation.ClearWaypoints();
-
-            if (!ghostNavigation.CheckForEmpty()) 
-            {
-                var distanceFromWaypoint = Vector3.Distance(ghostNavigation.GetLastLocalWaypoint(), _transform.localPosition);
-                if (distanceFromWaypoint <= 0.5f) 
-                {
-                    if (returnFromOutOfAreaBounds) ghostNavigation.RemoveLastLocalWaypoint();
-                    else ghostNavigation.ClearWaypoints(); //walk back exactly one waypoint if started in bounds
-                }
-            }
-            if (!ghostNavigation.CheckForEmpty()) ghostNavigation.UpdateNavigationToTarget(ghostNavigation.GetLastLocalWaypoint(), MoveType.PATROL);
-
+            if (!ghostNavigation.IsWaypointsListEmpty()) ghostNavigation.UpdateNavigationToTarget(ghostNavigation.GetLastLocalWaypoint(), MoveType.PATROL);
             return true;
+        }
+
+        public override void OnArriveAtPosition()
+        {
+            if (ghostNavigation.IsWaypointsListEmpty()) return;
+
+            if (returnFromOutOfAreaBounds) ghostNavigation.RemoveLastLocalWaypoint();
+            else ghostNavigation.ClearWaypoints(); //walk back exactly one waypoint if started in bounds
         }
 
         public override void OnExitAction()

@@ -47,7 +47,7 @@ namespace HugMod.HuggableFrights
 
             if (_data.previousAction != GetName())
             {
-                if (hugLocation == null || !ghostNavigation.CheckForFull()) 
+                if (hugLocation == null || !ghostNavigation.IsWaypointsListFull()) 
                 { 
                     hugLocation = _transform.localPosition;
                     ghostNavigation.AddLocalWaypoint(hugLocation);

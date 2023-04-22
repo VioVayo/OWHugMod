@@ -22,8 +22,8 @@ namespace HugMod.HuggableFrights
         public void ClearWaypoints() { localWaypoints.Clear(); }
 
         public Vector3 GetLastLocalWaypoint() { return localWaypoints[localWaypoints.Count - 1]; }
-        public bool CheckForEmpty() { return localWaypoints.Count == 0; }
-        public bool CheckForFull() { return localWaypoints.Count >= maxCapacity; }
+        public bool IsWaypointsListEmpty() { return localWaypoints.Count <= 0; }
+        public bool IsWaypointsListFull() { return localWaypoints.Count >= maxCapacity; }
 
 
         public void UpdateNavigationToTarget(Vector3 localTarget, MoveType moveType)
@@ -37,7 +37,7 @@ namespace HugMod.HuggableFrights
             isInBounds = ghostController.GetNodeMap().CheckLocalPointInBounds(gameObject.transform.localPosition);
             if (isInBounds)
             {
-                if (!ghostController.IsMoving()) ghostController.PathfindToLocalPosition(localTarget, moveType);
+                if (ghostController.GetLocalTargetPosition() != localTarget) ghostController.PathfindToLocalPosition(localTarget, moveType);
                 return;
             }
             else if (wasInBounds) AddLocalWaypoint(gameObject.transform.localPosition);
@@ -47,7 +47,8 @@ namespace HugMod.HuggableFrights
             var projection = Vector3.ProjectOnPlane(globalTarget - gameObject.transform.position, gameObject.transform.up) + gameObject.transform.position;
 
             //check for cliff edges
-            var floorCheckOrigin = gameObject.transform.position + ghostController.LocalToWorldDirection(ghostController._velocity) + gameObject.transform.up.normalized;
+            var floorCheckOffsetMagnitude = ghostController._acceleration == 0 ? ghostController._velocity.magnitude : Mathf.Pow(ghostController._velocity.magnitude, 2) / ghostController._acceleration;
+            var floorCheckOrigin = gameObject.transform.position + gameObject.transform.up.normalized + ghostController.LocalToWorldDirection(ghostController._velocity).normalized * floorCheckOffsetMagnitude;
             var floorCheck = Physics.Raycast(floorCheckOrigin, -gameObject.transform.up, out RaycastHit floorHit, 1.5f, OWLayerMask.physicalMask);
             if (!floorCheck)
             {
@@ -56,16 +57,16 @@ namespace HugMod.HuggableFrights
             }
 
             //account for elevation differences, I drew triangles to math this and everything
-            var dist = Vector3.Distance(projection, gameObject.transform.position);
-            var checkHeight = gameObject.transform.InverseTransformPoint(floorHit.point).y;
-            var checkDist = (floorHit.point - gameObject.transform.position - checkHeight * gameObject.transform.up).magnitude;
-            if (checkDist != 0) projection += (dist * checkHeight / checkDist) * gameObject.transform.up.normalized;
+            var distanceFromTarget = Vector3.Distance(projection, gameObject.transform.position);
+            var floorCheckHeight = gameObject.transform.InverseTransformPoint(floorHit.point).y;
+            var floorCheckXZDist = (floorHit.point - gameObject.transform.position - floorCheckHeight * gameObject.transform.up).magnitude;
+            if (floorCheckXZDist != 0) projection += (distanceFromTarget * floorCheckHeight / floorCheckXZDist) * gameObject.transform.up.normalized;
 
             //obstacle avoidance
             var point1 = gameObject.transform.position + gameObject.transform.up.normalized * 0.9f;
-            var point2 = gameObject.transform.position + gameObject.transform.up.normalized * 3.8f;
-            var wallCheck = Physics.CapsuleCast(point1, point2, 0.7f, projection - gameObject.transform.position, out RaycastHit wallHit, 1, OWLayerMask.physicalMask);
-            if (wallCheck) projection = Vector3.ProjectOnPlane(projection - gameObject.transform.position, wallHit.normal) + gameObject.transform.position;
+            var point2 = gameObject.transform.position + gameObject.transform.up.normalized * 3.7f;
+            var wallCheck = Physics.CapsuleCast(point1, point2, 0.8f, projection - gameObject.transform.position, out RaycastHit wallHit, 1, OWLayerMask.physicalMask);
+            if (wallCheck) projection = Vector3.ProjectOnPlane(projection - wallHit.point, wallHit.normal) + wallHit.point + wallHit.normal;
 
             ghostController.MoveToLocalPosition(gameObject.transform.parent.InverseTransformPoint(projection), moveType);
         }

@@ -33,6 +33,7 @@ namespace HugMod.HuggableFrights
             stunTime = Random.Range(minStunTime, maxStunTime);
             hugComponent.ForceLookAtPlayer(true);
             focussingLight = Random.Range(0, 3) == 0;
+            _controller.StopMoving();
             _controller.SetLanternConcealed(!focussingLight);
             _controller.FaceLocalPosition(_transform.parent.InverseTransformPoint(GetPlayerObjectTransform().position), TurnSpeed.MEDIUM);
         }

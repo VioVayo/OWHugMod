@@ -36,5 +36,13 @@ namespace HugMod.HuggableFrights
         {
             if (Settings.FriendmakerModeEnabled) __instance._origParent.gameObject.GetComponent<HugComponent>().SetHugEnabled(true);
         }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(GhostBrain), nameof(GhostBrain.TabulaRasa))]
+        public static void GhostBrain_TabulaRasa_Postfix(GhostBrain __instance)
+        {
+            var current = __instance.GetCurrentActionName();
+            if (current == HuggedActionName || current == WitnessedHugActionName) __instance.ChangeAction(null);
+        }
     }
 }

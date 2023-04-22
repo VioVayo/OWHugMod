@@ -102,11 +102,12 @@ namespace HugMod.HuggableFrights
                 popup.OnCancel += toggleElement.Toggle;
             });
 
-            var resetButton = optionsCanvas.transform.Find("OptionsMenu-Panel/OptionsButtons/UIElement-ResetToDefaultsButton").GetComponent<Button>();
-            resetButton.onClick.AddListener(() => { if (toggleElement._value == 1) toggleElement.Toggle(); });
-
-            var saveButton = optionsCanvas.transform.Find("OptionsMenu-Panel/OptionsButtons/UIElement-SaveAndExit").GetComponent<Button>();
-            saveButton.onClick.AddListener(() => { HuggableFrightsToggle(toggleElement._value == 1); });
+            //doubles for button click and controller command
+            var menuView = optionsCanvas.transform.Find("SettingsMenuManagers").GetComponent<SettingsMenuView>();
+            menuView._resetSettingsAction.OnSubmitAction += () => { if (toggleElement.isActiveAndEnabled && toggleElement._value == 1) toggleElement.Toggle(); };
+            menuView._resetSettingsActionByCommand.OnSubmitAction += () => { if (toggleElement.isActiveAndEnabled && toggleElement._value == 1) toggleElement.Toggle(); };
+            menuView._closeMenuAction.OnSubmitAction += () => { HuggableFrightsToggle(toggleElement._value == 1); };
+            menuView._confirmCancelAction.OnMenuCancel += (irrelevant1, irrelevant2) => { HuggableFrightsToggle(toggleElement._value == 1); };
         }
 
         private static void HuggableFrightsToggle(bool enable)
