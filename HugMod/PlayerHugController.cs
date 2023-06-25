@@ -68,6 +68,7 @@ namespace HugMod
 
         public static void LockPlayerControl(Transform baseTransform, Vector3 focus)
         {
+            Locator.GetToolModeSwapper().UnequipTool();
             OWInput.ChangeInputMode(InputMode.None);
             Locator.GetPlayerTransform()?.GetRequiredComponent<PlayerLockOnTargeting>()?.LockOn(baseTransform, focus, 4.5f);
         }
@@ -81,8 +82,6 @@ namespace HugMod
 
         public static void PlayerStartHug(float height)
         {
-            Locator.GetToolModeSwapper().UnequipTool();
-
             if (playerAnimator.runtimeAnimatorController != playerOverrider)
             {
                 playerRuntimeController = playerAnimator.runtimeAnimatorController; //regrab every time because it differs between suited and unsuited
@@ -136,9 +135,9 @@ namespace HugMod
             concludingHug = true;
 
             while (playerAnimator.IsInTransition(0)) yield return null;
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(0.3f); //at the very least finish hug start transition and hold for this long
 
-            playerAnimator.CrossFadeInFixedTime("Placeholder02", crossfadeDuration, 0, -crossfadeDuration);
+            playerAnimator.CrossFadeInFixedTime("Placeholder02", crossfadeDuration, 0, -(crossfadeDuration + 0.1f));
 
             yield return new WaitForSeconds(crossfadeDuration + 0.1f);
 

@@ -18,6 +18,7 @@ namespace HugMod.HuggableFrights
         public static GhostAction.Name ReturnActionName { get; private set; }
 
         private static bool setupComplete = false;
+        private static PopupMenu popup;
         private static event Action<bool> OnHuggableFrightsToggle;
 
         private static float owlReceiverRange = 10;
@@ -25,8 +26,6 @@ namespace HugMod.HuggableFrights
         private static string optionText = "Friendmaker Mode";
         private static string optionTooltipText = "Enables the making of more friends.";
         private static string popupText = "This option is recommended for those who've already experienced the Echoes of the Eye DLC as it was intended, as it significantly alters gameplay. Do you wish to continue?";
-        private static string popupConfirmText = "YES";
-        private static string popupCancelText = "NO";
 
 
         public static void HFSetup()
@@ -77,6 +76,7 @@ namespace HugMod.HuggableFrights
             //add checkbox to settings menu
             var menuObj = optionsCanvas.FindInDescendants("MenuGameplayBasic").gameObject;
             var settingsOptionObj = menuObj.transform.Find("UIElement-ReducedFrights").gameObject;
+            var popupPrefab = settingsOptionObj.GetComponentInChildren<ReducedFrightsPopup>()._popupPrefab;
             settingsOptionObj = GameObject.Instantiate(settingsOptionObj, settingsOptionObj.transform.parent);
             settingsOptionObj.name = "UIElement-HuggableFrights";
             GameObject.Destroy(settingsOptionObj.GetComponentInChildren<LocalizedText>());
@@ -98,8 +98,16 @@ namespace HugMod.HuggableFrights
             toggleButton.onClick.AddListener(() =>
             {
                 if (toggleElement._value != 1) return; //the value is changed before this action is called so this checks for what it's toggled *to*
-                var popup = HugModInstance.ModHelper.Menus.PopupManager.CreateMessagePopup(popupText, true, popupConfirmText, popupCancelText);
-                popup.OnCancel += toggleElement.Toggle;
+                if (popup == null)
+                {
+                    var gameObject = GameObject.Instantiate<GameObject>(popupPrefab);
+                    popup = gameObject.GetComponentInChildren<PopupMenu>(true);
+                    popup.OnPopupCancel += toggleElement.Toggle;
+                }
+                ScreenPrompt screenPrompt1 = new ScreenPrompt(InputLibrary.menuConfirm, UITextLibrary.GetString(UITextType.MenuConfirm), 0, ScreenPrompt.DisplayState.Normal, false);
+                ScreenPrompt screenPrompt2 = new ScreenPrompt(InputLibrary.cancel, UITextLibrary.GetString(UITextType.MenuCancel), 0, ScreenPrompt.DisplayState.Normal, false);
+                popup.EnableMenu(true);
+                popup.SetUpPopup(popupText, InputLibrary.menuConfirm, InputLibrary.cancel, screenPrompt1, screenPrompt2);
             });
 
             //doubles for button click and controller command
@@ -107,7 +115,7 @@ namespace HugMod.HuggableFrights
             menuView._resetSettingsAction.OnSubmitAction += () => { if (toggleElement.isActiveAndEnabled && toggleElement._value == 1) toggleElement.Toggle(); };
             menuView._resetSettingsActionByCommand.OnSubmitAction += () => { if (toggleElement.isActiveAndEnabled && toggleElement._value == 1) toggleElement.Toggle(); };
             menuView._closeMenuAction.OnSubmitAction += () => { HuggableFrightsToggle(toggleElement._value == 1); };
-            menuView._confirmCancelAction.OnMenuCancel += (irrelevant1, irrelevant2) => { HuggableFrightsToggle(toggleElement._value == 1); };
+            menuView._confirmCancelAction.OnMenuCancel += (_, _) => { HuggableFrightsToggle(toggleElement._value == 1); };
         }
 
         private static void HuggableFrightsToggle(bool enable)
