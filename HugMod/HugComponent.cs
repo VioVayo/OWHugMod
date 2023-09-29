@@ -52,12 +52,12 @@ namespace HugMod
         public event Action OnDestroyEvent;
 
 
-        private void Awake() { SetHugEnabled(false); }
+        private void Awake() { SetHugEnabled(false); } //don't call Update before HugComponent is initialised in case it's not initialised immediately when added or initialisation fails
 
         public void Initialise()
         {
-            var flag = gameObject.activeInHierarchy;
-            gameObject.SetActive(true);
+            var flag = gameObject.activeSelf;
+            gameObject.SetActive(true); //avoid nullrefs on by default deactivated GOs (like the Collector)
 
             HugReceiver = gameObject.GetComponentInChildren<InteractReceiver>();
             if (HugReceiver == null)
@@ -65,8 +65,8 @@ namespace HugMod
                 var receiverCollider = gameObject.GetComponentInChildren<OWCollider>();
                 if (receiverCollider == null)
                 {
-                    HugModInstance.ModHelper.Console.WriteLine($"Couldn't find OWCollider in children of object \"{gameObject.name}\". HugComponent will be disabled.", MessageType.Error);
-                    SetHugEnabled(false);
+                    HugModInstance.ModHelper.Console.WriteLine($"HugComponent on object \"{gameObject.name}\" couldn't create InteractReceiver, failed to find OWCollider in children of object.", MessageType.Error);
+                    gameObject.SetActive(flag);
                     return;
                 }
                 if (receiverCollider.gameObject.layer == LayerMask.NameToLayer("Ignore Raycast")) receiverCollider.gameObject.layer = LayerMask.NameToLayer("Default");
@@ -74,7 +74,12 @@ namespace HugMod
                 HugReceiver.OnGainFocus += () => { Locator.GetPromptManager().RemoveScreenPrompt(HugReceiver._screenPrompt); };
                 HugReceiver.SetInteractionEnabled(true);
             }
-            if (!AddTriggerCollider(HugReceiver._owCollider._collider)) return; //only progress if both a valid InteractReceiver and trigger Collider exist
+            if (!AddTriggerCollider(HugReceiver._owCollider._collider)) //prints an error if it fails
+            {
+                gameObject.SetActive(flag);
+                return;
+            } 
+            //only progress if both a valid InteractReceiver and trigger Collider exist, otherwise consider initialisation failed
 
             HugReceiver.OnGainFocus += EnableHug;
             HugReceiver.OnLoseFocus += DisableHug;
@@ -106,7 +111,11 @@ namespace HugMod
 
         private bool AddTriggerCollider(Collider compareCollider)
         {
-            if (compareCollider == null) return false;
+            if (compareCollider == null)
+            {
+                HugModInstance.ModHelper.Console.WriteLine($"HugComponent on object \"{gameObject.name}\" couldn't create trigger Collider, Collider used for comparison is Null.", MessageType.Error);
+                return false; 
+            }
 
             var triggerObj = compareCollider.gameObject.CreateChild("Hug_TriggerCollider");
             triggerObj.layer = LayerMask.NameToLayer("Ignore Raycast");
@@ -121,8 +130,7 @@ namespace HugMod
             else
             {
                 hugTriggerCollider.Remove();
-                HugModInstance.ModHelper.Console.WriteLine($"Collider type is not supported. HugComponent associated with object \"{gameObject.name}\" will be disabled.", MessageType.Error);
-                SetHugEnabled(false);
+                HugModInstance.ModHelper.Console.WriteLine($"HugComponent on object \"{gameObject.name}\" couldn't create trigger Collider, comparison Collider type is not supported.", MessageType.Error);
                 return false;
             }
             return true;
@@ -258,7 +266,7 @@ namespace HugMod
 
         private void OnDisable()
         {
-            if (HugReceiver != null && HugReceiver._focused) DisableHug();
+            if (HugReceiver != null && HugReceiver._focused) DisableHug(); //might be easier to check for canHug here but the symmetry with OnEnable is nice
             if (sequenceInProgress) CancelHugSequence();
         }
 
@@ -275,7 +283,7 @@ namespace HugMod
             canHug = false;
         }
 
-        public void OnAnimatorIK()
+        public void OnAnimatorIK() //called via proxy even if HugComponent is disabled (so no jumpy head animation when en- or disabling HugComponent)
         {
             if (!IsAnimated() || PlayerCamera == null) return;
             var position = PlayerCamera.transform.position;
@@ -304,22 +312,18 @@ namespace HugMod
             sequenceInProgress = true;
             LockPlayerControl(gameObject.transform, focusPoint);
             WalkingTowardsHugTarget = true;
-            unstickRoutine = StartCoroutine(Unstick(unstickTime));
+            unstickRoutine = StartCoroutine(CancelHugSequence(unstickTime)); //force cancel sequence after a certain time in case target is unreachable
         }
 
-        private IEnumerator Unstick(float delay)
+        public void OnTriggerStay(Collider collider) //called via proxy even if HugComponent is disabled
         {
-            yield return new WaitForSeconds(delay);
-            CancelHugSequence();
-        }
-
-        public void OnTriggerStay(Collider collider) 
-        { 
+            if (!enabled) return;
             if (collider.gameObject.CompareTag("Player") && WalkingTowardsHugTarget && sequenceInProgress) StartCoroutine(HugSequenceMain()); 
         }
 
         private IEnumerator HugSequenceMain()
         {
+            if (unstickRoutine != null) StopCoroutine(unstickRoutine); //no unstick necessary because target was successfully reached
             CommenceHug();
             yield return null;
             if (IsAnimated() && HugAnimator.enabled && hugTrigger != "react_None")
@@ -338,14 +342,17 @@ namespace HugMod
             if (!IsAnimatorControllerSwapped()) yield break; //everything after this has only to do with resetting the animator
 
             var hugLayer = HugAnimator.GetLayerIndex("Hug Layer");
-            while (!HugAnimator.GetNextAnimatorStateInfo(hugLayer).IsName("end_hug")) yield return null;
-            if (unstickRoutine != null) StopCoroutine(unstickRoutine);
-            StartCoroutine(ResetAnimator(0.7f)); //min 0.5f to give enough time for the transition to play
+            while (!HugAnimator.GetNextAnimatorStateInfo(hugLayer).IsName("end_hug")) //this checks for a specific upcoming animation state, it shouldn't change from next to current before this check -
+            {                                                                       //just in case though unstick will force ResetAnimator() after a certain time
+                if (!sequenceInProgress) yield break; //exit this coroutine if the animator was already reset by the unstick
+                yield return null; 
+            }
+            if (unstickRoutine != null) StopCoroutine(unstickRoutine); //no unstick necessary because state check was successful
+            StartCoroutine(ResetAnimator(0.7f)); //min 0.5f to give enough time for the animation transition to play
         }
 
         private void CommenceHug()
         {
-            if (unstickRoutine != null) StopCoroutine(unstickRoutine);
             var height = GetPlayerObjectTransform().InverseTransformPoint(gameObject.transform.TransformPoint(focusPoint)).y;
             if (height < 5 || height > 22)
             {
@@ -399,7 +406,7 @@ namespace HugMod
             if (IsAnimatorControllerSwapped()) 
             { 
                 HugAnimator.SetTrigger("end_hug");
-                unstickRoutine = StartCoroutine(ResetAnimator(unstickTime));
+                unstickRoutine = StartCoroutine(ResetAnimator(unstickTime)); //in case ResetAnimator() is not triggered by the animator state transition as it should be, see HugSequenceMain()
             } 
             else StartCoroutine(ResetAnimator(1.2f)); //if controller wasn't swapped but the target is still animated there should be a little delay for look IK to persist through
             OnConcludingHug?.Invoke();
@@ -409,7 +416,7 @@ namespace HugMod
         {
             yield return new WaitForSeconds(delay); //if conversation was started in the middle of the transition taking place during this delay -
             while (PlayerState._inConversation) yield return null; //keep animators swapped until the conversation concludes to avoid jumpy animation transitions
-
+            // THIS CAN CURRENTLY CAUSE ANIMATION ISSUES AT THE EYE WHEN THE BAND STARTS PLAYING, note to self I'll try to fix this when I have the brain power
             var time = HugAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime;
             if (IsAnimatorControllerSwapped())
             {
@@ -422,6 +429,12 @@ namespace HugMod
             sequenceInProgress = false;
         }
 
+
+        private IEnumerator CancelHugSequence(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            CancelHugSequence();
+        }
 
         public void CancelHugSequence()
         {
@@ -442,7 +455,7 @@ namespace HugMod
                 {
                     var hugLayer = HugAnimator.GetLayerIndex("Hug Layer");
                     if (!HugAnimator.GetNextAnimatorStateInfo(hugLayer).IsName("end_hug")) HugAnimator.CrossFadeInFixedTime("end_hug", transitionTime, hugLayer);
-                    hugIK.StartCoroutine(ResetAnimator(transitionTime)); //start this on a separate MonoBehaviour on the same GO as the animator, in case this method was triggered by OnDestroy
+                    hugIK.StartCoroutine(ResetAnimator(transitionTime)); //start this on a separate MonoBehaviour on the same GO as the animator, in case this method was triggered by HugComponent being destroyed
                     return;
                 }
                 else HugAnimator.runtimeAnimatorController = initialRuntimeController;

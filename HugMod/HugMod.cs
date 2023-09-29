@@ -51,7 +51,7 @@ namespace HugMod
             TargetManager.ApplyTargetPatches();
             TargetManager.LoadHugTargetData();
 
-            LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
+            LoadManager.OnCompleteSceneLoad += (_, loadScene) =>
             {
                 if (loadScene != OWScene.SolarSystem && loadScene != OWScene.EyeOfTheUniverse) return;
 

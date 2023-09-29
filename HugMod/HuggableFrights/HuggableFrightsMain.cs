@@ -38,7 +38,7 @@ namespace HugMod.HuggableFrights
             HuggableFrightsPatches.Apply();
 
             AddHuggableFrightsOption();
-            LoadManager.OnCompleteSceneLoad += (scene, loadScene) => 
+            LoadManager.OnCompleteSceneLoad += (_, loadScene) => 
             { 
                 if (loadScene == OWScene.SolarSystem || loadScene == OWScene.TitleScreen || loadScene == OWScene.EyeOfTheUniverse) AddHuggableFrightsOption();
                 if (loadScene == OWScene.SolarSystem) OwlBrains = GameObject.FindObjectsOfType<GhostBrain>().ToList();
