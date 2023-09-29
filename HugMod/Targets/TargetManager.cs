@@ -91,6 +91,7 @@ namespace HugMod.Targets
             var hugComponent = target.GetHugComponent() ?? AddHugComponent(target);
             if (hugComponent == null) return;
             var receiver = hugComponent.gameObject.GetComponentInChildren<InteractReceiver>();
+            if (receiver._owCollider._active) return; //this is meant to reenable the receiver without reenabling dialogue, so don't do the thing if everything is still enabled
             receiver.OnPressInteract -= hugComponent.gameObject.GetComponentInChildren<CharacterDialogueTree>().OnPressInteract;
             receiver.OnGainFocus += () => { Locator.GetPromptManager().RemoveScreenPrompt(receiver._screenPrompt); };
             receiver.EnableInteraction();
@@ -99,7 +100,7 @@ namespace HugMod.Targets
 
         private static void Individualise_PreInit(Target target, HugComponent hugComponent)
         {
-            if (target.isAtEye && currentScene == OWScene.EyeOfTheUniverse) return;
+            if (target.isAtEye && currentScene == OWScene.EyeOfTheUniverse) return; //some object names are shared between scenes, this ensures special treatment for those present in both at the Eye only
             if (target == travellers["Gabbro"]) GabbroHug = hugComponent;
             if (target == friends["Solanum"]) SolanumHug = hugComponent;
             if (target == friends["Prisoner"])
