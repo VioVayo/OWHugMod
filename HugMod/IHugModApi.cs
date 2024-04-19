@@ -6,6 +6,14 @@ namespace HugMod
     public interface IHugModApi
     {
         /// <summary>
+        /// Returns an array of all GameObjects that have a hug script attached<br/>
+        /// This may falsely return null if used directly on scene load, so it's good to wait a frame first
+        /// </summary>
+        /// <returns>The array of GameObjects, including deactivated ones</returns>
+        public GameObject[] GetAllHuggables();
+
+
+        /// <summary>
         /// Makes a suitable GameObject huggable
         /// </summary>
         /// <param name="hugObject">The GameObject, requires an OWCollider component on it or one of its children</param>

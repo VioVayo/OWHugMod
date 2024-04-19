@@ -1,12 +1,16 @@
 ﻿using OWML.Common;
 using System;
+using System.Linq;
 using UnityEngine;
 
 namespace HugMod
 {
     public class HugModApi : IHugModApi
     {
-        public void AddHugComponent(GameObject hugObject, bool initialiseImmediately) 
+        public GameObject[] GetAllHuggables() => Resources.FindObjectsOfTypeAll<HugComponent>().Select(obj => obj.gameObject).ToArray();
+
+
+        public void AddHugComponent(GameObject hugObject, bool initialiseImmediately)
         {
             if (hugObject.GetComponent<HugComponent>() == null) 
             { 

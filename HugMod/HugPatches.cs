@@ -19,12 +19,12 @@ namespace HugMod
         [HarmonyPatch(typeof(PlayerCharacterController), nameof(PlayerCharacterController.UpdateMovement))]
         public static IEnumerable<CodeInstruction> PlayerCharacterController_UpdateMovement_Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var matcher = new CodeMatcher(instructions).MatchForward(true,
+            var matcher = new CodeMatcher(instructions).MatchForward(true, //matching to the part where it accepts player input
                 new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(OWInput), nameof(OWInput.GetAxisValue), new Type[] { typeof(IInputCommands), typeof(InputMode) })),
                 new CodeMatch(OpCodes.Stloc_0)
             );
 
-            matcher.Insert(
+            matcher.Insert( //sneakily swapping out the value on top of the stack before it gets stored
                 Transpilers.EmitDelegate<Func<Vector2, Vector2>>((input) =>
                 {
                     if (WalkingTowardsHugTarget) return new Vector2(0, WalkingTowardsHugSpeed);
