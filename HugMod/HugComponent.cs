@@ -415,7 +415,6 @@ namespace HugMod
         {
             yield return new WaitForSeconds(delay); //if conversation was started in the middle of the transition taking place during this delay -
             while (PlayerState._inConversation) yield return null; //keep animators swapped until the conversation concludes to avoid jumpy animation transitions
-            // THIS CAN CURRENTLY CAUSE ANIMATION ISSUES AT THE EYE WHEN THE BAND STARTS PLAYING, note to self I'll try to fix this when I have the brain power
             var time = HugAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime;
             if (IsAnimatorControllerSwapped())
             {

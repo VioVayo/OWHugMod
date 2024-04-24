@@ -138,6 +138,26 @@ namespace HugMod.Targets
             AnimationClip nullClip = null;
             hugComponent.SetUnderlayTransition(nullClip, 0);
 
+            TravelerEyeController eyeController = null;
+            var go = hugComponent.gameObject;
+            while (eyeController == null && go.name != "Campsite")
+            {
+                go.TryGetComponent(out eyeController); //some controllers are on the same GO, some on a GO higher, choice dialogue Prisoner doesn't have one
+                go = go.transform.parent?.gameObject; //so we're checking up to the GO all of the travellers are children of
+            }
+            if (eyeController != null)
+            {
+                var isPlaying = false;
+                eyeController.OnStartPlaying += () => { isPlaying = true; };
+                eyeController.OnStopPlaying += () => { isPlaying = false; };
+                hugComponent.OnHugFinish += () =>
+                {
+                    if (!isPlaying) return;
+                    hugComponent.HugAnimator.SetBool("Playing", true); //if music was triggered during the out transition, the controller swap back will have overridden the music play trigger
+                    hugComponent.HugAnimator.CrossFadeInFixedTime("PlayingInstrument", 0.25f, -1, eyeController._signal.GetOWAudioSource().time);
+                };
+            }
+
             if (target == travellers["Riebeck"]) Individualise_Riebeck(target, hugComponent);
             if (target == travellers["Chert"]) Individualise_Chert_Eye(target, hugComponent);
             if (target == travellers["Gabbro"]) Individualise_Gabbro_Eye(target, hugComponent);
