@@ -302,6 +302,11 @@ namespace HugMod
             hugPrompt.SetVisibility(OWInput.IsInputMode(InputMode.Character));
 
             if (OWInput.IsNewlyPressed(InputLibrary.interactSecondary, InputMode.Character) && canHug) BeginHugSequence();
+            if (OWInput.IsNewlyReleased(InputLibrary.interactSecondary, InputMode.None) && sequenceInProgress && !WalkingTowardsHugTarget)
+            { //if for some reason the sequence gets stuck (like on an animated target that's trapped in transition forever), this breaks us out of it
+                if (unstickRoutine != null) StopCoroutine(unstickRoutine);
+                unstickRoutine = StartCoroutine(CancelHugSequence(unstickTime));
+            } //the case where button was released while the player was walking is handled at the start of HugSequenceMain() below
         }
 
 
@@ -324,6 +329,7 @@ namespace HugMod
         private IEnumerator HugSequenceMain()
         {
             if (unstickRoutine != null) StopCoroutine(unstickRoutine); //no unstick necessary because target was successfully reached
+            if (!OWInput.IsPressed(InputLibrary.interactSecondary)) unstickRoutine = StartCoroutine(CancelHugSequence(unstickTime)); //see Update()
             CommenceHug();
             yield return null;
             if (IsAnimated() && HugAnimator.enabled && hugTrigger != "react_None")
@@ -337,17 +343,14 @@ namespace HugMod
                     UnderlayTransition();
                 }
             }
+            if (OWInput.IsPressed(InputLibrary.interactSecondary) && unstickRoutine != null) StopCoroutine(unstickRoutine); //in case button was re-pressed, don't unstick while hug is held
             while (OWInput.IsPressed(InputLibrary.interactSecondary)) yield return null;
             ConcludeHug();
             if (!IsAnimatorControllerSwapped()) yield break; //everything after this has only to do with resetting the animator
 
             var hugLayer = HugAnimator.GetLayerIndex("Hug Layer");
-            while (!HugAnimator.GetNextAnimatorStateInfo(hugLayer).IsName("end_hug")) //this checks for a specific upcoming animation state, it shouldn't change from next to current before this check -
-            {                                                                       //just in case though unstick will force ResetAnimator() after a certain time
-                if (!sequenceInProgress) yield break; //exit this coroutine if the animator was already reset by the unstick
-                yield return null; 
-            }
-            if (unstickRoutine != null) StopCoroutine(unstickRoutine); //no unstick necessary because state check was successful
+            while (!HugAnimator.GetNextAnimatorStateInfo(hugLayer).IsName("end_hug")) yield return null; 
+            if (unstickRoutine != null) StopCoroutine(unstickRoutine); //no unstick necessary because it should be smooth sailing from here
             StartCoroutine(ResetAnimator(0.7f)); //min 0.5f to give enough time for the animation transition to play
         }
 
@@ -403,11 +406,7 @@ namespace HugMod
                 sequenceInProgress = false;
                 return;
             }
-            if (IsAnimatorControllerSwapped()) 
-            { 
-                HugAnimator.SetTrigger("end_hug");
-                unstickRoutine = StartCoroutine(ResetAnimator(unstickTime)); //in case ResetAnimator() is not triggered by the animator state transition as it should be, see HugSequenceMain()
-            } 
+            if (IsAnimatorControllerSwapped()) HugAnimator.SetTrigger("end_hug");
             else StartCoroutine(ResetAnimator(1.2f)); //if controller wasn't swapped but the target is still animated there should be a little delay for look IK to persist through
             OnConcludingHug?.Invoke();
         }
