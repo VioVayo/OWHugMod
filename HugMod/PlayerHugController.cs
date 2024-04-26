@@ -7,6 +7,8 @@ namespace HugMod
 {
     public class PlayerHugController : MonoBehaviour
     {
+        public static ScreenPrompt HugPrompt = new(InputLibrary.interactSecondary, "");
+
         public static bool WalkingTowardsHugTarget = false;
         public static float WalkingTowardsHugSpeed = 0.7f;
         public static GameObject PlayerCamera { get; private set; }
@@ -28,10 +30,10 @@ namespace HugMod
         public static void SetUpPlayer()
         {
             if (playerHugInstance == null) playerHugInstance = GameObject.Find("Player_Body/Traveller_HEA_Player_v2").AddComponent<PlayerHugController>();
-            playerHugInstance.StartCoroutine(SetUpRoutine());
+            playerHugInstance.StartCoroutine(SetupRoutine());
         }
 
-        private static IEnumerator SetUpRoutine()
+        private static IEnumerator SetupRoutine()
         {
             cameraAttached = false; 
             concludingHug = false;
@@ -152,6 +154,12 @@ namespace HugMod
         {
             cameraAttached = false;
             UnlockPlayerControl();
+        }
+
+
+        private void Update()
+        {
+            HugPrompt.SetVisibility(OWInput.IsInputMode(InputMode.Character));
         }
     }
 }

@@ -21,7 +21,7 @@ namespace HugMod
         private AnimatorOverrideController hugOverrider = new();
 
         //tabled
-        private ScreenPrompt hugPrompt = new(InputLibrary.interactSecondary, "<CMD> " + "Hug");
+        private string promptText = "<CMD> " + "Hug";
         private Vector3 focusPoint = new(0, 0, 0);
         private string hugTrigger = "react_None";
         private bool fullbodyReact = true, keepFootAnimRight = false, keepFootAnimLeft = false, keepHandAnimRight = false, keepHandAnimLeft = false;
@@ -180,7 +180,7 @@ namespace HugMod
             else HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugIK Component associated with object \"{gameObject.name}\".", MessageType.Error);
         }
         public void ForceLookAtPlayer(bool enable) { forceLookAtPlayer = enable; }
-        public void SetPrompt(string name) { hugPrompt = new(InputLibrary.interactSecondary, "<CMD> " + "Hug " + name); }
+        public void SetPrompt(string name) { promptText = "<CMD> " + "Hug " + name; }
         public void SetFocusPoint(Vector3 focusPoint) { this.focusPoint = focusPoint; }
         public void SetAnimationTrigger(HugTrigger hugTrigger) { this.hugTrigger = "react_" + hugTrigger.ToString();}
         public void SetAnimationMasks(bool fullbodyReact = true, bool keepRightFootPosition = false, bool keepLeftFootPosition = false, bool keepRightHandPose = false, bool keepLeftHandPose = false)
@@ -273,13 +273,14 @@ namespace HugMod
         private void EnableHug()
         {
             if (!enabled) return;
-            Locator.GetPromptManager()?.AddScreenPrompt(hugPrompt, PromptPosition.Center, OWInput.IsInputMode(InputMode.Character));
+            HugPrompt.SetText(promptText);
+            Locator.GetPromptManager()?.AddScreenPrompt(HugPrompt, PromptPosition.Center, OWInput.IsInputMode(InputMode.Character));
             canHug = true;
         }
 
         private void DisableHug()
         {
-            Locator.GetPromptManager()?.RemoveScreenPrompt(hugPrompt);
+            Locator.GetPromptManager()?.RemoveScreenPrompt(HugPrompt);
             canHug = false;
         }
 
@@ -299,8 +300,6 @@ namespace HugMod
 
         private void Update()
         {
-            hugPrompt.SetVisibility(OWInput.IsInputMode(InputMode.Character));
-
             if (OWInput.IsNewlyPressed(InputLibrary.interactSecondary, InputMode.Character) && canHug) BeginHugSequence();
             if (OWInput.IsNewlyReleased(InputLibrary.interactSecondary, InputMode.None) && sequenceInProgress && !WalkingTowardsHugTarget)
             { //if for some reason the sequence gets stuck (like on an animated target that's trapped in transition forever), this breaks us out of it
