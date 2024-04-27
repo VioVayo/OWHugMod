@@ -66,7 +66,7 @@ namespace HugMod
         }
 
 
-        public static Transform GetPlayerObjectTransform() { return playerObject.transform; }
+        public static Transform GetPlayerObjectTransform() => playerObject.transform;
 
         public static void LockPlayerControl(Transform baseTransform, Vector3 focus)
         {
@@ -157,9 +157,6 @@ namespace HugMod
         }
 
 
-        private void Update()
-        {
-            HugPrompt.SetVisibility(OWInput.IsInputMode(InputMode.Character));
-        }
+        private void Update() { HugPrompt.SetVisibility(OWInput.IsInputMode(InputMode.Character)); }
     }
 }

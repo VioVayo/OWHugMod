@@ -24,6 +24,16 @@ namespace HugMod.HuggableFrights
         }
 
         [HarmonyPostfix]
+        [HarmonyPatch(typeof(GhostBrain), nameof(GhostBrain.TabulaRasa))]
+        public static void GhostBrain_TabulaRasa_Postfix(GhostBrain __instance)
+        {
+            var current = __instance.GetCurrentActionName();
+            if (current == HuggedActionName || current == WitnessedHugActionName) __instance.ChangeAction(null);
+        }
+
+        //the following two patched methods are analogues that both kick the player out of the DW, but only one is subscribed directly to an event, the other uses a timer
+        //if there was events for both I would subscribe this change to those the same way disabling the HugComponent is to the grab, but alas, we're patching them both instead for consistency
+        [HarmonyPostfix]
         [HarmonyPatch(typeof(GhostGrabController), nameof(GhostGrabController.OnSnapPlayerNeck))]
         public static void GhostGrabController_OnSnapPlayerNeck_Postfix(GhostGrabController __instance)
         {
@@ -35,14 +45,6 @@ namespace HugMod.HuggableFrights
         public static void GhostGrabController_CompleteExtinguish_Postfix(GhostGrabController __instance)
         {
             if (Settings.FriendmakerModeEnabled) __instance._origParent.gameObject.GetComponent<HugComponent>().SetHugEnabled(true);
-        }
-
-        [HarmonyPostfix]
-        [HarmonyPatch(typeof(GhostBrain), nameof(GhostBrain.TabulaRasa))]
-        public static void GhostBrain_TabulaRasa_Postfix(GhostBrain __instance)
-        {
-            var current = __instance.GetCurrentActionName();
-            if (current == HuggedActionName || current == WitnessedHugActionName) __instance.ChangeAction(null);
         }
     }
 }

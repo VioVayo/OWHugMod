@@ -22,11 +22,11 @@ namespace HugMod.HuggableFrights
             hugComponent = _controller.gameObject.GetComponent<HugComponent>();
         }
 
-        public override Name GetName() { return WitnessedHugActionName; }
+        public override Name GetName() => WitnessedHugActionName;
 
-        public override float CalculateUtility() { return -200; }
+        public override float CalculateUtility() => -200;
 
-        public override bool IsInterruptible() { return false; }
+        public override bool IsInterruptible() => false;
 
         public override void OnEnterAction() 
         { 
@@ -63,7 +63,7 @@ namespace HugMod.HuggableFrights
         {
             if (!focussingLight) return;
 
-            var isClose = Vector3.Distance(localPlayerPosition, _transform.localPosition) < _controller.GetUnfocusedLanternRange();
+            var isClose = Vector3.Distance(localPlayerPosition, _transform.localPosition) <= _controller.GetUnfocusedLanternRange();
             var refocusCondition = isClose ? _controller.GetDreamLanternController().GetFocus() != 0 : _controller.GetDreamLanternController().GetFocus() != 1;
             if (refocusCondition) _controller.ChangeLanternFocus(isClose ? 0 : 1);
         }

@@ -35,11 +35,11 @@ namespace HugMod.HuggableFrights
             ghostNavigation = _controller.gameObject.GetComponent<GhostNavigation>();
         }
 
-        public override Name GetName() { return HuggedActionName; }
+        public override Name GetName() => HuggedActionName;
 
-        public override float CalculateUtility() { return -200; }
+        public override float CalculateUtility() => -200;
 
-        public override bool IsInterruptible() { return false; }
+        public override bool IsInterruptible() => false;
 
         public override void OnEnterAction()
         {
@@ -66,7 +66,7 @@ namespace HugMod.HuggableFrights
         public override bool Update_Action()
         {
             if (hugComponent.IsSequenceInProgress()) return true;
-            if (GetActionTimeElapsed() > hugStunTime) return false; 
+            if (GetActionTimeElapsed() > hugStunTime) return false; //the action's enter time is altered on hug finish, so this timer only starts when the sequence ends
 
             var localPlayerPosition = _transform.parent.InverseTransformPoint(GetPlayerObjectTransform().position);
             UpdateLantern(localPlayerPosition);
@@ -85,6 +85,7 @@ namespace HugMod.HuggableFrights
             var playerDroppedLantern = !Locator.GetDreamWorldController().GetPlayerLantern().GetLanternController().IsHeldByPlayer();
             var toggleCondition = shouldFocus ? _data.sensor.isPlayerHeldLanternVisible : (playerConcealed || playerDroppedLantern) && _data.wasPlayerLocationKnown;
 
+            //Owl will illuminate concealing player, otherwise conceal themselves, with a reaction delay
             if (toggleCondition)
             { 
                 shouldFocus = !shouldFocus;
@@ -97,7 +98,7 @@ namespace HugMod.HuggableFrights
             }
             if (focussingLight)
             {
-                var isClose = Vector3.Distance(localPlayerPosition, _transform.localPosition) < _controller.GetUnfocusedLanternRange();
+                var isClose = Vector3.Distance(localPlayerPosition, _transform.localPosition) <= _controller.GetUnfocusedLanternRange();
                 var refocusCondition = isClose ? _controller.GetDreamLanternController().GetFocus() != 0 : _controller.GetDreamLanternController().GetFocus() != 1;
                 if (refocusCondition) _controller.ChangeLanternFocus(isClose ? 0 : 1);
             }
@@ -111,6 +112,8 @@ namespace HugMod.HuggableFrights
                 return;
             }
 
+            //unless they're tracking a concealing player with their lantern, Owl will turn to face player if player goes behind them
+            //otherwise they will keep facing the way they are
             var relativePlayerPosition = _transform.InverseTransformPoint(GetPlayerObjectTransform().position);
             if (_controller._facingState != GhostController.FacingState.FacePosition)
             {
@@ -129,11 +132,15 @@ namespace HugMod.HuggableFrights
             var playerDistance = Vector3.Distance(localPlayerPosition, _transform.localPosition);
             var movedDistance = Vector3.Distance(_transform.localPosition, hugLocation);
             var playerMovedDistance = Vector3.Distance(localPlayerPosition, hugLocation);
+            var angle = Vector3.Angle(_transform.localPosition - hugLocation, localPlayerPosition - hugLocation);
 
             var random = Random.Range(0, 100);
-            var stopChance = _controller.IsMoving() ? random < chanceToStopWhileMoving : random < chanceToNotMoveWhileStopped;
+            var stop = _controller.IsMoving() ? random < chanceToStopWhileMoving : random < chanceToNotMoveWhileStopped;
 
-            if (playerDistance < followDistance || (movedDistance > followLimit && playerMovedDistance > followLimit) || stopChance || focussingLight || shouldFocus)
+            //Owl will follow player only if they're a minimum distance away, and only up to a certain distance from the place of the hug
+            //with a random chance of stopping/waiting for more natural looking hesitant movement
+            //unless they're tracking a concealing player with their lantern
+            if (playerDistance < followDistance || (movedDistance > followLimit && playerMovedDistance > followLimit && angle < 90) || stop || focussingLight || shouldFocus)
             {
                 _controller.StopMoving();
                 return;

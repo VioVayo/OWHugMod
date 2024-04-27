@@ -23,8 +23,8 @@ namespace HugMod.Targets
             return obj;
         }
 
-        public HugComponent GetHugComponent() { return GetTargetObject().GetComponent<HugComponent>(); }
+        public HugComponent GetHugComponent() => GetTargetObject().GetComponent<HugComponent>();
 
-        public Vector3 GetFocusPoint() { return new(focusPoint.Item1, focusPoint.Item2, focusPoint.Item3); }
+        public Vector3 GetFocusPoint() => new(focusPoint.Item1, focusPoint.Item2, focusPoint.Item3);
     }
 }

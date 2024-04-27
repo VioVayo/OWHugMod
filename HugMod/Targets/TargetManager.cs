@@ -15,7 +15,6 @@ namespace HugMod.Targets
         private static OWScene currentScene;
 
         private static GameObject owlColliderObj;
-        private static GameObject proxyOwlColliderObj;
 
 
         public static void ApplyTargetPatches()
@@ -100,7 +99,11 @@ namespace HugMod.Targets
 
         private static void Individualise_PreInit(Target target, HugComponent hugComponent)
         {
-            if (target.isAtEye && currentScene == OWScene.EyeOfTheUniverse) return; //some object names are shared between scenes, this ensures special treatment for those present in both at the Eye only
+            if (target.isAtEye && currentScene == OWScene.EyeOfTheUniverse)
+            {
+                //some object names are shared between scenes, this ensures special treatment for those present in both at the Eye only
+                return;
+            }
             if (target == travellers["Gabbro"]) GabbroHug = hugComponent;
             if (target == friends["Solanum"]) SolanumHug = hugComponent;
             if (target == friends["Prisoner"])
@@ -130,7 +133,6 @@ namespace HugMod.Targets
             if (target == villagers["Arkose"]) Individualise_Arkose(target, hugComponent);
             if (target == friends["Solanum"]) Individualise_Solanum(target, hugComponent);
             if (target.isOwl) Individualise_Owls(target, hugComponent);
-            if (target.isPartyOwl) Individualise_PartyOwls(target, hugComponent);
         }
 
         private static void Individualise_AtEye(Target target, HugComponent hugComponent)
@@ -420,13 +422,8 @@ namespace HugMod.Targets
         }
         private static void Individualise_PartyOwls_PreInit(Target target, HugComponent hugComponent)
         {
-            if (owlColliderObj == null) owlColliderObj = GameObject.Find("Prefab_IP_GhostBird_Micolash/Collider_Ghost");
-            if (owlColliderObj != null) proxyOwlColliderObj = GameObject.Instantiate(owlColliderObj, hugComponent.gameObject.transform);
-            //every target runs through all of AddHugComponent as part of the foreach so proxyOwlColliderObj is the same per target pre- and post-initialisation
-        }
-        private static void Individualise_PartyOwls(Target target, HugComponent hugComponent)
-        {
-            proxyOwlColliderObj.Exists()?.transform.SetParent(proxyOwlColliderObj.transform.parent.Find("Ghostbird_IP_ANIM"), true);
+            if (owlColliderObj == null) owlColliderObj = GameObject.Find("Prefab_IP_GhostBird_Micolash/Collider_Ghost"); //the proxies don't have colliders so we're copying from a non-proxy
+            if (owlColliderObj != null) GameObject.Instantiate(owlColliderObj, hugComponent.gameObject.transform.Find("Ghostbird_IP_ANIM"));
         }
     }
 }

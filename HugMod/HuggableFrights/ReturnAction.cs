@@ -4,7 +4,7 @@ using static HugMod.HuggableFrights.HuggableFrightsMain;
 
 namespace HugMod.HuggableFrights
 {
-    public class ReturnAction : GhostAction
+    public class ReturnAction : GhostAction //uses the GhostNavigation waypoints list to lead the Owl back to its node map if it was lured out of bounds
     {
         private GhostBrain ghostBrain;
         private GhostNavigation ghostNavigation;
@@ -21,15 +21,17 @@ namespace HugMod.HuggableFrights
             ghostNavigation = _controller.gameObject.GetComponent<GhostNavigation>();
         }
 
-        public override Name GetName() { return ReturnActionName; }
+        public override Name GetName() => ReturnActionName;
 
         public override float CalculateUtility() 
         {
             if (ghostNavigation.IsWaypointsListEmpty()) return -200;
-            if (_running ? GetActionTimeElapsed() <= questioningDecisionsTime : (_data.previousAction != ReturnActionName && _data.currentAction != Name.Chase)) return 200;
+            if (!_running && _data.previousAction != ReturnActionName && _data.currentAction != Name.Chase) return 200; //guaranteed to start if waypoints list isn't empty, unless-
             if (_controller.GetNodeMap().CheckLocalPointInBounds(_transform.localPosition)) return 91; //allows chase if seen while in bounds
             return 99; //allows grab if in contact
         }
+
+        public override bool IsInterruptible() => GetActionTimeElapsed() > questioningDecisionsTime;
 
         public override void OnEnterAction()
         {
@@ -42,7 +44,7 @@ namespace HugMod.HuggableFrights
 
         public override bool Update_Action()
         {
-            if (returnFromOutOfAreaBounds && _controller.GetNodeMap().CheckLocalPointInBounds(_transform.localPosition)) ghostNavigation.ClearWaypoints();
+            if (returnFromOutOfAreaBounds && _controller.GetNodeMap().CheckLocalPointInBounds(_transform.localPosition)) ghostNavigation.ClearWaypoints(); //stop action if Owl found its way back from out of bounds
             if (!ghostNavigation.IsWaypointsListEmpty()) ghostNavigation.UpdateNavigationToTarget(ghostNavigation.GetLastLocalWaypoint(), MoveType.PATROL);
             return true;
         }
@@ -52,7 +54,7 @@ namespace HugMod.HuggableFrights
             if (ghostNavigation.IsWaypointsListEmpty()) return;
 
             if (returnFromOutOfAreaBounds) ghostNavigation.RemoveLastLocalWaypoint();
-            else ghostNavigation.ClearWaypoints(); //walk back exactly one waypoint if started in bounds
+            else ghostNavigation.ClearWaypoints(); //walk back exactly one waypoint and then stop action if started in bounds
         }
 
         public override void OnExitAction()

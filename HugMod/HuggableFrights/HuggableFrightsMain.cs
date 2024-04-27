@@ -1,7 +1,6 @@
 ﻿using OWML.Common;
 using OWML.Utils;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,7 +10,7 @@ namespace HugMod.HuggableFrights
 {
     public class HuggableFrightsMain
     {
-        public static List<GhostBrain> OwlBrains { get; private set; } = new();
+        public static GhostBrain[] OwlBrains { get; private set; }
 
         public static GhostAction.Name HuggedActionName { get; private set; }
         public static GhostAction.Name WitnessedHugActionName { get; private set; }
@@ -25,23 +24,25 @@ namespace HugMod.HuggableFrights
 
         private static string optionText = "Friendmaker Mode";
         private static string optionTooltipText = "Enables the making of more friends.";
-        private static string popupText = "This option is recommended for those who've already experienced the Echoes of the Eye DLC as it was intended, as it significantly alters gameplay. Do you wish to continue?";
+        private static string popupText = 
+            "This option is recommended for those who've already experienced the Echoes of the Eye DLC as it was intended, as it significantly alters gameplay. Do you wish to continue?";
 
 
         public static void HFSetup()
         {
             if (HugModInstance.ModHelper.Interaction.ModExists("Leadpogrommer.PeacefulGhosts")) return;
+            //HF only handles Owl AI stuff to make them non-hostile when hugged, so if they're not hostile from the start the hug mechanic works as is and we don't need any of this
 
             HuggedActionName = EnumUtils.Create<GhostAction.Name>("Hugged");
             WitnessedHugActionName = EnumUtils.Create<GhostAction.Name>("WitnessedHug");
             ReturnActionName = EnumUtils.Create<GhostAction.Name>("Return");
             HuggableFrightsPatches.Apply();
 
-            AddHuggableFrightsOption();
+            AddHuggableFrightsOption(); //add to initial title screen scene menu
             LoadManager.OnCompleteSceneLoad += (_, loadScene) => 
             { 
-                if (loadScene == OWScene.SolarSystem || loadScene == OWScene.TitleScreen || loadScene == OWScene.EyeOfTheUniverse) AddHuggableFrightsOption();
-                if (loadScene == OWScene.SolarSystem) OwlBrains = GameObject.FindObjectsOfType<GhostBrain>().ToList();
+                if (loadScene == OWScene.SolarSystem || loadScene == OWScene.TitleScreen || loadScene == OWScene.EyeOfTheUniverse) AddHuggableFrightsOption(); //and to every new scene with a menu
+                if (loadScene == OWScene.SolarSystem) OwlBrains = GameObject.FindObjectsOfType<GhostBrain>().ToArray();
             };
 
             setupComplete = true;
@@ -53,9 +54,9 @@ namespace HugMod.HuggableFrights
 
             var brain = hugComponent.gameObject.GetComponent<GhostBrain>();
             brain._actions = brain._actions.AddToArray(HuggedActionName, WitnessedHugActionName, ReturnActionName);
-            brain._effects.OnGrabComplete += () => { hugComponent.SetHugEnabled(false); };
+            brain._effects.OnGrabComplete += () => { hugComponent.SetHugEnabled(false); }; //reenabling this after the player gets kicked out is done in patches
+            brain._controller.gameObject.AddComponent<GhostNavigation>();
 
-            hugComponent.gameObject.AddComponent<GhostNavigation>();
             hugComponent.HugReceiver.SetInteractRange(owlReceiverRange);
             hugComponent.OnHugStart += () => { brain.ChangeAction(HuggedActionName); };
             hugComponent.OnHugFinish += () => { if (brain._currentAction.GetName() == HuggedActionName) brain._currentAction._enterTime = Time.time; };
@@ -110,7 +111,7 @@ namespace HugMod.HuggableFrights
                 popup.SetUpPopup(popupText, InputLibrary.menuConfirm, InputLibrary.cancel, screenPrompt1, screenPrompt2);
             });
 
-            //doubles for button click and controller command
+            //seeming duplicates are for button click and controller command each
             var menuView = optionsCanvas.transform.Find("SettingsMenuManagers").GetComponent<SettingsMenuView>();
             menuView._resetSettingsAction.OnSubmitAction += () => { if (toggleElement.isActiveAndEnabled && toggleElement._value == 1) toggleElement.Toggle(); };
             menuView._resetSettingsActionByCommand.OnSubmitAction += () => { if (toggleElement.isActiveAndEnabled && toggleElement._value == 1) toggleElement.Toggle(); };

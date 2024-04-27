@@ -21,7 +21,7 @@ namespace HugMod.Targets
             GabbroHug.Exists()?.CancelHugSequence();
         }
 
-        [HarmonyPrefix] //keep animators from crossfading when they shouldn't
+        [HarmonyPrefix] //keep animators from crossfading when they shouldn't, because Gabbro isn't using triggers like the other travellers are
         [HarmonyPatch(typeof(GabbroTravelerController), nameof(GabbroTravelerController.StartConversation))]
         public static bool GabbroTravelerController_StartConversation_Prefix()
         {
@@ -66,25 +66,25 @@ namespace HugMod.Targets
             SolanumHug.Exists()?.SetHugEnabled(true);
         }
 
-        [HarmonyTranspiler] //make IK work without required parameters
+        [HarmonyTranspiler] //make IK work without required parameters while AnimatorController swapped
         [HarmonyPatch(typeof(SolanumAnimController), nameof(SolanumAnimController.OnAnimatorIK))]
         public static IEnumerable<CodeInstruction> SolanumAnimController_OnAnimatorIK_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            var matcher = new CodeMatcher(instructions, generator).MatchForward(false,
+            var matcher = new CodeMatcher(instructions, generator).MatchForward(false, //this._animator.GetFloat("parameter name")
                 new CodeMatch(OpCodes.Ldarg_0),
                 new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(SolanumAnimController), nameof(SolanumAnimController._animator))),
                 new CodeMatch(OpCodes.Ldstr),
                 new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Animator), nameof(Animator.GetFloat), new Type[] { typeof(string) }))
             );
 
-            matcher.Repeat(matcher => {
+            matcher.Repeat(matcher => { //GetFloat is called twice and we want to conditionally skip both
                 matcher.CreateLabel(out Label doGetFloat);
                 matcher.CreateLabelAt(matcher.Pos + 4, out Label skipGetFloat);
 
                 matcher.InsertAndAdvance( //move pointer past inserted code
                     Transpilers.EmitDelegate(() => { return SolanumHug != null && SolanumHug.IsSequenceInProgress(); }),
-                    new CodeInstruction(OpCodes.Brfalse, doGetFloat),
-                    new CodeInstruction(OpCodes.Ldc_R4, 1f),
+                    new CodeInstruction(OpCodes.Brfalse, doGetFloat), //don't wanna replace return-value in this case so we jump to GetFloat
+                    new CodeInstruction(OpCodes.Ldc_R4, 1f), //this replaces what would be returned by GetFloat
                     new CodeInstruction(OpCodes.Br, skipGetFloat)
                 ).Advance(4); //move pointer past matched code, to not match with the same block again on repeat
             });
@@ -96,20 +96,20 @@ namespace HugMod.Targets
         [HarmonyPatch(typeof(SolanumAnimController), nameof(SolanumAnimController.LateUpdate))]
         public static IEnumerable<CodeInstruction> SolanumAnimController_LateUpdate_Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
         {
-            var matcher = new CodeMatcher(instructions, generator).MatchForward(false, new CodeMatch(
+            var matcher = new CodeMatcher(instructions, generator).MatchForward(false, new CodeMatch( //matching to the event subscription at the end of if (this._animatorStateEvents == null) { }
                 OpCodes.Callvirt, AccessTools.Method(typeof(AnimatorStateEvents), "AnimatorStateEvents.add_OnEnterStateEvents", new Type[] { typeof(AnimatorStateEvents.StateEvent) })
             )).Advance(1);
 
             matcher.CreateLabel(out Label skipGetAnimatorStateEvents);
 
-            matcher.MatchBack(true, 
+            matcher.MatchBack(true, //if (this._animatorStateEvents == null), useEnd places the pointer at the start of the matched block here, since we matched back
                 new CodeMatch(OpCodes.Ldarg_0),
                 new CodeMatch(OpCodes.Ldfld, AccessTools.Field(typeof(SolanumAnimController), nameof(SolanumAnimController._animatorStateEvents))),
                 new CodeMatch(OpCodes.Ldnull),
                 new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(UnityEngine.Object), "Object.op_Equality", new Type[] { typeof(UnityEngine.Object), typeof(UnityEngine.Object) }))
             ).Insert(
                 Transpilers.EmitDelegate(() => { return SolanumHug != null && SolanumHug.IsSequenceInProgress(); }),
-                new CodeInstruction(OpCodes.Brtrue, skipGetAnimatorStateEvents)
+                new CodeInstruction(OpCodes.Brtrue, skipGetAnimatorStateEvents) //this is outside the whole if block, since we advanced by 1 before
             );
 
             return matcher.InstructionEnumeration();
@@ -140,7 +140,7 @@ namespace HugMod.Targets
             if (PrisonerHug.IsSequenceInProgress()) PrisonerHug.OnHugFinish += DelayedArrival;
             return !PrisonerHug.IsSequenceInProgress();
 
-            void DelayedArrival() //does the things that would normally happen the moment the Prisoner reached the elevator
+            void DelayedArrival() //does the same things that would normally happen when the Prisoner reaches the elevator
             {
                 PrisonerHug.OnHugFinish -= DelayedArrival;
                 __instance._controller.StopFacing();
@@ -196,6 +196,14 @@ namespace HugMod.Targets
         public static void GhostEffects_Update_Effects_Postfix(GhostEffects __instance)
         {
             if (__instance._controller._movementPaused) __instance._animator.SetFloat(GhostEffects.AnimatorKeys.Float_TurnSpeed, 0);
+        }
+
+        
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(GhostBrain), nameof(GhostBrain.Die))]
+        public static bool GhostBrain_Die_Prefix(GhostBrain __instance)
+        {
+            return !(Settings.SillyGhostNames && __instance.gameObject.name.Contains("Micolash"));
         }
     }
 }
