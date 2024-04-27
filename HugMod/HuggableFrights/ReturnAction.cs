@@ -11,7 +11,7 @@ namespace HugMod.HuggableFrights
 
         private bool returnFromOutOfAreaBounds = false;
 
-        private float questioningDecisionsTime = 5;
+        private static float questioningDecisionsTime = 5;
 
 
         public override void Initialize(GhostData data, GhostController controller, GhostSensors sensors, GhostEffects effects)
@@ -36,6 +36,8 @@ namespace HugMod.HuggableFrights
         public override void OnEnterAction()
         {
             returnFromOutOfAreaBounds = !_controller.GetNodeMap().CheckLocalPointInBounds(_transform.localPosition);
+            ghostNavigation.AddLocalWaypoint(_transform.localPosition); //add a new waypoint even beyond capacity for corner blunting purposes, remove immediately
+            ghostNavigation.RemoveLastLocalWaypoint();
             _controller.SetLanternConcealed(ghostBrain._startWithLanternConcealed);
             _controller.FaceVelocity();
             _effects.SetMovementStyle(GhostEffects.MovementStyle.Normal);

@@ -18,14 +18,14 @@ namespace HugMod.HuggableFrights
         private float focusDelayTimer;
 
         //numbery things
-        private float hugStunTime = 30;
-        private float focusDelay = 0.4f;
-        private float followDistance = 7;
-        private float followLimit = 20;
-        private float maxPositionOffset = 3.5f;
+        private static float hugStunTime = 30;
+        private static float focusDelay = 0.4f;
+        private static float followDistance = 7;
+        private static float followLimit = 20;
+        private static float maxPositionOffset = 3.5f;
 
-        private int chanceToStopWhileMoving = 1;
-        private int chanceToNotMoveWhileStopped = 98;
+        private static int chanceToStopWhileMoving = 1;
+        private static int chanceToNotMoveWhileStopped = 98;
 
 
         public override void Initialize(GhostData data, GhostController controller, GhostSensors sensors, GhostEffects effects)

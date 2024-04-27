@@ -9,11 +9,11 @@ namespace HugMod.HuggableFrights
     {
         private HugComponent hugComponent;
 
-        private float stunTime;
-        private float minStunTime = 40;
-        private float maxStunTime = 60;
-
         private bool focussingLight = false;
+        private float stunTime;
+
+        private static float minStunTime = 40;
+        private static float maxStunTime = 60;
 
 
         public override void Initialize(GhostData data, GhostController controller, GhostSensors sensors, GhostEffects effects)
