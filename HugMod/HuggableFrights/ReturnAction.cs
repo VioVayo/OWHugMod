@@ -51,9 +51,9 @@ namespace HugMod.HuggableFrights
             return true;
         }
 
-        public override void OnArriveAtPosition()
+        public override void OnArriveAtPosition() //this might also be called when arriving near the projection of a waypoint onto an obstacle plane rather than at the waypoint itself
         {
-            if (ghostNavigation.IsWaypointsListEmpty()) return;
+            if (ghostNavigation.IsWaypointsListEmpty() || Vector3.Distance(_transform.localPosition, ghostNavigation.GetLastLocalWaypoint()) > 1) return;
 
             if (returnFromOutOfAreaBounds) ghostNavigation.RemoveLastLocalWaypoint();
             else ghostNavigation.ClearWaypoints(); //walk back exactly one waypoint and then stop action if started in bounds
