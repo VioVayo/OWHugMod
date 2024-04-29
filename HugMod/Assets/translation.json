@@ -1,0 +1,30 @@
+﻿{
+  "Prompt": {
+    "ENGLISH": "Hug {0}",
+    "SPANISH_LA": "Abrazo {0}",
+    "GERMAN": "Umarme {0}",
+    "FRENCH": "Étreindre {0}",
+    "ITALIAN": "Abbraccia {0}",
+    "POLISH": "Przytul {0}",
+    "PORTUGUESE_BR": "Abraço {0}",
+    "JAPANESE": "{0} を抱き締める",
+    "RUSSIAN": "Обнимаю {0}",
+    "CHINESE_SIMPLE": "拥抱 {0}",
+    "KOREAN": "다음 상대에게 포옹하다 {0}",
+    "TURKISH": "{0} ya sarılmak"
+  },
+  "Ghost": {
+    "ENGLISH": "Ghost",
+    "SPANISH_LA": "Fantasma",
+    "GERMAN": "Geist",
+    "FRENCH": "Fantôme",
+    "ITALIAN": "Fantasma",
+    "POLISH": "Widmową",
+    "PORTUGUESE_BR": "Fantasma",
+    "JAPANESE": "幽霊",
+    "RUSSIAN": "Призрачная",
+    "CHINESE_SIMPLE": "幽灵",
+    "KOREAN": "유령",
+    "TURKISH": "Hayalet"
+  }
+}

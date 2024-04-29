@@ -180,7 +180,7 @@ namespace HugMod
             else HugModInstance.ModHelper.Console.WriteLine($"Couldn't find HugIK Component associated with object \"{gameObject.name}\".", MessageType.Error);
         }
         public void ForceLookAtPlayer(bool enable) { forceLookAtPlayer = enable; }
-        public void SetPrompt(string name) { promptText = "<CMD> " + "Hug " + name; }
+        public void SetPrompt(string name) { promptText = "<CMD> " + HugTranslations.GetHugPrompt(name); }
         public void SetFocusPoint(Vector3 focusPoint) { this.focusPoint = focusPoint; }
         public void SetAnimationTrigger(HugTrigger hugTrigger) { this.hugTrigger = "react_" + hugTrigger.ToString();}
         public void SetAnimationMasks(bool fullbodyReact = true, bool keepRightFootPosition = false, bool keepLeftFootPosition = false, bool keepRightHandPose = false, bool keepLeftHandPose = false)
