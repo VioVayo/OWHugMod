@@ -61,7 +61,9 @@ namespace HugMod.HuggableFrights
             hugComponent.OnHugStart += () => { brain.ChangeAction(HuggedActionName); };
             hugComponent.OnHugFinish += () => { if (brain._currentAction.GetName() == HuggedActionName) brain._currentAction._enterTime = Time.time; };
 
-            EnableOwlToggle(hugComponent);
+            if (!Settings.FriendmakerModeEnabled) hugComponent.SetHugEnabled(false);
+            OnHuggableFrightsToggle += hugComponent.SetHugEnabled;
+            hugComponent.OnDestroyEvent += () => { OnHuggableFrightsToggle -= hugComponent.SetHugEnabled; };
         }
 
         public static string HFEnabledMessage(bool wasChanged)
@@ -76,10 +78,12 @@ namespace HugMod.HuggableFrights
 
             //add checkbox to settings menu
             var menuObj = optionsCanvas.FindInDescendants("MenuGameplayBasic").gameObject;
-            var settingsOptionObj = menuObj.transform.Find("UIElement-ReducedFrights").gameObject;
+            var settingsOptionObj = menuObj.FindInDescendants("UIElement-ReducedFrights").gameObject;
             var popupPrefab = settingsOptionObj.GetComponentInChildren<ReducedFrightsPopup>()._popupPrefab;
+            var pos = settingsOptionObj.transform.GetSiblingIndex() + 1;
             settingsOptionObj = GameObject.Instantiate(settingsOptionObj, settingsOptionObj.transform.parent);
             settingsOptionObj.name = "UIElement-HuggableFrights";
+            settingsOptionObj.transform.SetSiblingIndex(pos);
             GameObject.Destroy(settingsOptionObj.GetComponentInChildren<LocalizedText>());
             GameObject.Destroy(settingsOptionObj.GetComponentInChildren<ReducedFrightsPopup>());
 
@@ -126,13 +130,6 @@ namespace HugMod.HuggableFrights
             OnHuggableFrightsToggle?.Invoke(enable);
             HugModInstance.ModHelper.Console.WriteLine(HFEnabledMessage(true), MessageType.Success);
             UpdateSettings();
-        }
-
-        private static void EnableOwlToggle(HugComponent hugComponent)
-        {
-            if (!Settings.FriendmakerModeEnabled) hugComponent.SetHugEnabled(false);
-            OnHuggableFrightsToggle += hugComponent.SetHugEnabled;
-            hugComponent.OnDestroyEvent += () => { OnHuggableFrightsToggle -= hugComponent.SetHugEnabled; };
         }
     }
 }
